@@ -1,26 +1,40 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { DataProvider } from "@/contexts/DataContext";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import CompaniesPage from "./pages/Companies/CompaniesPage";
+import CompanyForm from "./pages/Companies/CompanyForm";
+import BudgetsPage from "./pages/Budgets/BudgetsPage";
+import BudgetForm from "./pages/Budgets/BudgetForm";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <DataProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/empresas" element={<CompaniesPage />} />
+            <Route path="/empresas/nova" element={<CompanyForm />} />
+            <Route path="/empresas/editar/:id" element={<CompanyForm />} />
+            <Route path="/orcamentos" element={<BudgetsPage />} />
+            <Route path="/orcamentos/novo" element={<BudgetForm />} />
+            <Route path="/orcamentos/editar/:id" element={<BudgetForm />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </DataProvider>
   </QueryClientProvider>
 );
 
