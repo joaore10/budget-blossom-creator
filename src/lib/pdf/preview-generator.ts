@@ -14,17 +14,12 @@ export const generatePreviewHTML = (
       ? alternativeBudget.itens_com_valores_alterados
       : budget.itens;
 
-    // The issue is here: we're checking if the template exists in pdfTemplates
-    // but we're storing the actual HTML in the company.modelo_pdf
-    // So instead of checking if it's in the templates, we should use it directly
-    
-    // Original code that's causing the issue:
-    // const templateHtml = company.modelo_pdf && Object.values(pdfTemplates).includes(company.modelo_pdf)
-    //   ? company.modelo_pdf
-    //   : pdfTemplates.template1;
-    
-    // Fixed code - use the company's template directly:
+    // Agora vamos usar diretamente o modelo HTML da empresa, sem verificação
+    // Se não houver um modelo definido, usamos o template padrão
     const templateHtml = company.modelo_pdf || pdfTemplates.template1;
+    
+    console.log("Usando modelo da empresa:", company.nome);
+    console.log("Template utilizado:", templateHtml.substring(0, 100) + "...");
 
     // Generate HTML with replaced placeholders
     return pdfUtils.replacePlaceholders(

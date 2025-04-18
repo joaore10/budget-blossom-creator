@@ -17,7 +17,6 @@ const BudgetsPage = () => {
   const {
     budgets,
     alternativeBudgets,
-    setAlternativeBudgets,
     deleteBudget,
     getCompanyById,
     generateAlternativeBudgets,
@@ -78,20 +77,26 @@ const BudgetsPage = () => {
     toast.info("Gerando PDFs e orçamentos alternativos...");
     
     try {
-      // Gerar orçamentos alternativos
-      const alternativeBudgetIds = await generateAlternativeBudgets(budget.id);
+      // Verificar se já existem orçamentos alternativos
+      const existingAlternatives = getAlternativeBudgetsByBudgetId(budget.id);
       
-      // Notificar usuário que os orçamentos alternativos foram gerados
-      if (alternativeBudgetIds.length > 0) {
-        toast.success(`${alternativeBudgetIds.length} orçamentos alternativos gerados`);
-        
-        // Atualizar o estado local para mostrar os orçamentos alternativos
-        setSelectedBudgetAlternatives(budget.id);
+      // Apenas gerar novos orçamentos alternativos se não existirem
+      let alternativeBudgetIds: string[] = [];
+      if (existingAlternatives.length === 0) {
+        alternativeBudgetIds = await generateAlternativeBudgets(budget.id);
+        if (alternativeBudgetIds.length > 0) {
+          toast.success(`${alternativeBudgetIds.length} orçamentos alternativos gerados`);
+        }
+      } else {
+        console.log("Orçamentos alternativos já existem, não gerando novos");
       }
       
       // Gerar PDF do orçamento base
       await generatePDF(budget, company);
       toast.success("PDF do orçamento base gerado com sucesso");
+      
+      // Mostrar os orçamentos alternativos
+      setSelectedBudgetAlternatives(budget.id);
     } catch (error) {
       console.error("Error generating PDFs:", error);
       toast.error("Erro ao gerar PDFs e orçamentos alternativos");
