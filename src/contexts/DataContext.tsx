@@ -1,4 +1,3 @@
-
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AlternativeBudget, Budget, BudgetItem, Company } from "@/types";
@@ -26,7 +25,7 @@ interface DataContextType {
     budgetId: string,
     companyId: string
   ) => AlternativeBudget | undefined;
-  generateAlternativeBudgets: (budgetId: string) => string[];
+  generateAlternativeBudgets: (budgetId: string) => Promise<string[]>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -161,16 +160,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ],
     };
 
-    setBudgets((prev) => {
-      const updatedBudgets = [...prev, newBudget];
-      // Importante: salvamos logo para localStorage para garantir consistência
-      try {
-        localStorage.setItem("budgets", JSON.stringify(updatedBudgets));
-      } catch (error) {
-        console.error("Error saving budgets to localStorage:", error);
-      }
-      return updatedBudgets;
-    });
+    // Update the state and ensure it's saved to localStorage synchronously
+    const updatedBudgets = [...budgets, newBudget];
+    setBudgets(updatedBudgets);
+    
+    try {
+      localStorage.setItem("budgets", JSON.stringify(updatedBudgets));
+    } catch (error) {
+      console.error("Error saving budgets to localStorage:", error);
+      toast.error("Erro ao salvar dados");
+    }
     
     toast.success("Orçamento criado com sucesso");
     return id;
@@ -178,20 +177,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const updateBudget = (budget: Budget) => {
     // Remove any alternative budgets for this budget as they'll need to be regenerated
-    setAlternativeBudgets((prev) =>
-      prev.filter((ab) => ab.orcamento_id !== budget.id)
-    );
+    const filteredAltBudgets = alternativeBudgets.filter((ab) => ab.orcamento_id !== budget.id);
+    setAlternativeBudgets(filteredAltBudgets);
+    
+    try {
+      localStorage.setItem("alternativeBudgets", JSON.stringify(filteredAltBudgets));
+    } catch (error) {
+      console.error("Error saving alternate budgets to localStorage:", error);
+    }
 
-    setBudgets((prev) => {
-      const updatedBudgets = prev.map((b) => (b.id === budget.id ? budget : b));
-      // Importante: salvamos logo para localStorage para garantir consistência
-      try {
-        localStorage.setItem("budgets", JSON.stringify(updatedBudgets));
-      } catch (error) {
-        console.error("Error saving budgets to localStorage:", error);
-      }
-      return updatedBudgets;
-    });
+    // Update budgets and save synchronously
+    const updatedBudgets = budgets.map((b) => (b.id === budget.id ? budget : b));
+    setBudgets(updatedBudgets);
+    
+    try {
+      localStorage.setItem("budgets", JSON.stringify(updatedBudgets));
+    } catch (error) {
+      console.error("Error saving budgets to localStorage:", error);
+      toast.error("Erro ao salvar dados");
+    }
     
     toast.success("Orçamento atualizado com sucesso");
     return budget;
@@ -229,9 +233,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  const generateAlternativeBudgets = (budgetId: string): string[] => {
+  const generateAlternativeBudgets = async (budgetId: string): Promise<string[]> => {
     console.log("Generating alternative budgets for budget ID:", budgetId);
-    const budget = getBudgetById(budgetId);
+    
+    // Make sure we're working with the latest data from state
+    const budget = budgets.find(b => b.id === budgetId);
     if (!budget) {
       console.error("Budget not found with ID:", budgetId);
       toast.error("Orçamento não encontrado");
@@ -247,14 +253,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     console.log("Other company IDs:", otherCompanyIds);
 
     // Clear any existing alternative budgets for this budget
-    setAlternativeBudgets((prev) => {
-      const filteredBudgets = prev.filter((ab) => ab.orcamento_id !== budgetId);
-      return filteredBudgets;
-    });
-
+    const filteredBudgets = alternativeBudgets.filter((ab) => ab.orcamento_id !== budgetId);
+    
     // Generate new alternative budgets
     const newAlternativeBudgetIds: string[] = [];
-
     const newAlternativeBudgets: AlternativeBudget[] = [];
 
     otherCompanyIds.forEach((companyId) => {
@@ -285,17 +287,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.log("Created alternative budget:", newAltBudget);
     });
 
-    // Atualizamos o estado em uma única operação
-    setAlternativeBudgets((prev) => {
-      const updatedAlternativeBudgets = [...prev, ...newAlternativeBudgets];
-      // Salvamos imediatamente no localStorage
-      try {
-        localStorage.setItem("alternativeBudgets", JSON.stringify(updatedAlternativeBudgets));
-      } catch (error) {
-        console.error("Error saving alternative budgets to localStorage:", error);
-      }
-      return updatedAlternativeBudgets;
-    });
+    // Update state with all new alternative budgets at once
+    const updatedAlternativeBudgets = [...filteredBudgets, ...newAlternativeBudgets];
+    setAlternativeBudgets(updatedAlternativeBudgets);
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem("alternativeBudgets", JSON.stringify(updatedAlternativeBudgets));
+    } catch (error) {
+      console.error("Error saving alternative budgets to localStorage:", error);
+      toast.error("Erro ao salvar dados de orçamentos alternativos");
+    }
 
     if (newAlternativeBudgetIds.length > 0) {
       toast.success(`${otherCompanyIds.length} orçamentos alternativos gerados`);

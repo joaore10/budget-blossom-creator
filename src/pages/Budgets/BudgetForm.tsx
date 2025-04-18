@@ -185,7 +185,7 @@ const BudgetForm = () => {
           return;
         }
 
-        const updatedBudget = updateBudget({
+        updateBudget({
           ...existingBudget,
           cliente: formData.cliente,
           empresa_base_id: formData.empresa_base_id,
@@ -199,16 +199,6 @@ const BudgetForm = () => {
         });
         
         budgetId = id;
-        
-        if (formData.empresas_selecionadas_ids.length > 1) {
-          try {
-            toast.info("Gerando orçamentos alternativos...");
-            generateAlternativeBudgets(budgetId);
-          } catch (error) {
-            console.error("Error generating alternative budgets:", error);
-            toast.error("Erro ao gerar orçamentos alternativos");
-          }
-        }
       } else {
         budgetId = addBudget({
           cliente: formData.cliente,
@@ -221,15 +211,15 @@ const BudgetForm = () => {
           ],
           itens: formData.itens,
         });
-        
-        if (formData.empresas_selecionadas_ids.length > 1) {
-          try {
-            toast.info("Gerando orçamentos alternativos...");
-            generateAlternativeBudgets(budgetId);
-          } catch (error) {
-            console.error("Error generating alternative budgets:", error);
-            toast.error("Erro ao gerar orçamentos alternativos");
-          }
+      }
+      
+      if (formData.empresas_selecionadas_ids.length > 1) {
+        try {
+          toast.info("Gerando orçamentos alternativos...");
+          await generateAlternativeBudgets(budgetId);
+        } catch (error) {
+          console.error("Error generating alternative budgets:", error);
+          toast.error("Erro ao gerar orçamentos alternativos");
         }
       }
 
