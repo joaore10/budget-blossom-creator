@@ -129,7 +129,7 @@ const BudgetsPage = () => {
     if (daysToExpiration <= 0) {
       return <Badge variant="destructive">Expirado</Badge>;
     } else if (daysToExpiration <= 7) {
-      return <Badge variant="warning" className="bg-orange-400 hover:bg-orange-500">Expirando</Badge>;
+      return <Badge variant="outline" className="bg-orange-400 hover:bg-orange-500">Expirando</Badge>;
     } else {
       return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Válido</Badge>;
     }

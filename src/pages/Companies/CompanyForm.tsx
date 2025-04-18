@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -189,7 +188,7 @@ const CompanyForm = () => {
                   className="font-mono text-xs min-h-[300px]"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Use marcadores como {{NOME_EMPRESA}}, {{CNPJ_EMPRESA}}, etc.
+                  Use marcadores como {"{"}{"{"}"NOME_EMPRESA"{"}"}{"}"}, {"{"}{"{"}"CNPJ_EMPRESA"{"}"}{"}"}, etc.
                   para inserir dados dinâmicos no PDF.
                 </p>
               </div>
