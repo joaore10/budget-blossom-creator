@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -42,7 +43,14 @@ import { toast } from "sonner";
 import { generatePDF } from "@/lib/pdf-generator";
 
 const BudgetsPage = () => {
-  const { budgets, deleteBudget, getCompanyById, generateAlternativeBudgets } = useData();
+  const { 
+    budgets, 
+    deleteBudget, 
+    getCompanyById, 
+    generateAlternativeBudgets, 
+    alternativeBudgets,
+    getAlternativeBudgetsByBudgetId 
+  } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredBudgets, setFilteredBudgets] = useState(budgets);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);

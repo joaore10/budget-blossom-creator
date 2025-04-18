@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -23,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
-import { pdfTemplates } from "@/lib/pdf-templates";
+import { pdfTemplates, defaultPdfTemplate } from "@/lib/pdf-templates";
 import { toast } from "sonner";
 
 const CompanyForm = () => {
