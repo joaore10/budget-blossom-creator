@@ -102,7 +102,7 @@ const AlternativeBudgetsDialog = ({
                             Visualizar
                           </Button>
                         </SheetTrigger>
-                        <SheetContent size="content" className="sm:max-w-[1100px]">
+                        <SheetContent className="sm:max-w-[1100px]">
                           <SheetHeader>
                             <SheetTitle>Prévia do Orçamento</SheetTitle>
                           </SheetHeader>
@@ -150,7 +150,7 @@ const AlternativeBudgetsDialog = ({
                                 Visualizar
                               </Button>
                             </SheetTrigger>
-                            <SheetContent size="content" className="sm:max-w-[1100px]">
+                            <SheetContent className="sm:max-w-[1100px]">
                               <SheetHeader>
                                 <SheetTitle>Prévia do Orçamento</SheetTitle>
                               </SheetHeader>
