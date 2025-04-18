@@ -13,8 +13,8 @@ export interface DataContextType {
   deleteBudget: (id: string) => Promise<void>;
   getCompanyById: (id: string) => Company | undefined;
   getBudgetById: (id: string) => Budget | undefined;
-  getAlternativeBudgetsByBudgetId: (budgetId: string) => AlternativeBudget[];
-  getAlternativeBudgetByCompanyAndBudget: (budgetId: string, companyId: string) => AlternativeBudget | undefined;
+  getAlternativeBudgetsByBudgetId: (budgetId: string) => Promise<AlternativeBudget[]>;
+  getAlternativeBudgetByCompanyAndBudget: (budgetId: string, companyId: string) => Promise<AlternativeBudget | undefined>;
   generateAlternativeBudgets: (budgetId: string) => Promise<string[]>;
   setAlternativeBudgets: (alternativeBudgets: AlternativeBudget[]) => void;
 }

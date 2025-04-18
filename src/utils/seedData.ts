@@ -32,8 +32,7 @@ export async function seedInitialData() {
     const { data: companiesData, error: companiesError } = await supabase
       .from('companies')
       .upsert(sampleCompanies, { 
-        onConflict: 'cnpj',
-        returning: 'minimal'
+        onConflict: 'cnpj'
       });
 
     if (companiesError) throw companiesError;

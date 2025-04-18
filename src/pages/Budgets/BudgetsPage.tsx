@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useData } from "@/contexts/DataContext";
@@ -28,6 +29,7 @@ const BudgetsPage = () => {
   const [budgetToDelete, setBudgetToDelete] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedBudgetAlternatives, setSelectedBudgetAlternatives] = useState<string | null>(null);
+  const [localAlternativeBudgets, setLocalAlternativeBudgets] = useState<AlternativeBudget[]>([]);
 
   useEffect(() => {
     let sorted = [...budgets].sort((a, b) => {
@@ -77,13 +79,16 @@ const BudgetsPage = () => {
     
     try {
       // Verificar se já existem orçamentos alternativos
-      const existingAlternatives = getAlternativeBudgetsByBudgetId(budget.id);
+      const existingAlternatives = await getAlternativeBudgetsByBudgetId(budget.id);
+      setLocalAlternativeBudgets(existingAlternatives);
       
       // Apenas gerar novos orçamentos alternativos se não existirem
       if (existingAlternatives.length === 0) {
         const alternativeBudgetIds = await generateAlternativeBudgets(budget.id);
         if (alternativeBudgetIds.length > 0) {
           toast.success(`${alternativeBudgetIds.length} orçamentos alternativos gerados`);
+          const updatedAlternatives = await getAlternativeBudgetsByBudgetId(budget.id);
+          setLocalAlternativeBudgets(updatedAlternatives);
         }
       }
       
@@ -95,15 +100,22 @@ const BudgetsPage = () => {
     }
   };
 
-  const handleViewAlternativeBudgets = (budgetId: string) => {
-    // Verificar se há orçamentos alternativos para esse budget
-    const alternatives = getAlternativeBudgetsByBudgetId(budgetId);
-    if (alternatives.length === 0) {
-      toast.info("Não há orçamentos alternativos para este orçamento. Clique em 'Gerar PDFs' primeiro.");
-      return;
+  const handleViewAlternativeBudgets = async (budgetId: string) => {
+    try {
+      // Verificar se há orçamentos alternativos para esse budget
+      const alternatives = await getAlternativeBudgetsByBudgetId(budgetId);
+      setLocalAlternativeBudgets(alternatives);
+      
+      if (alternatives.length === 0) {
+        toast.info("Não há orçamentos alternativos para este orçamento. Clique em 'Gerar PDFs' primeiro.");
+        return;
+      }
+      
+      setSelectedBudgetAlternatives(budgetId);
+    } catch (error) {
+      console.error("Error fetching alternative budgets:", error);
+      toast.error("Erro ao buscar orçamentos alternativos");
     }
-    
-    setSelectedBudgetAlternatives(budgetId);
   };
 
   const formatDate = (dateString: string) => {
@@ -183,7 +195,7 @@ const BudgetsPage = () => {
       <AlternativeBudgetsDialog
         selectedBudgetAlternatives={selectedBudgetAlternatives}
         onClose={() => setSelectedBudgetAlternatives(null)}
-        getAlternativeBudgetsByBudgetId={getAlternativeBudgetsByBudgetId}
+        getAlternativeBudgetsByBudgetId={() => Promise.resolve(localAlternativeBudgets)}
         getCompanyById={getCompanyById}
         budgets={budgets}
         formatCurrency={formatCurrency}
