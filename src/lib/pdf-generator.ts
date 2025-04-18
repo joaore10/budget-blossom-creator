@@ -17,9 +17,9 @@ export const generatePreviewHTML = (
       ? alternativeBudget.itens_com_valores_alterados
       : budget.itens;
 
-    // Get the template based on company's modelo_pdf or use default template
-    const templateHtml = company.modelo_pdf && company.modelo_pdf in pdfTemplates
-      ? pdfTemplates[company.modelo_pdf as keyof typeof pdfTemplates]
+    // Ensure the company's modelo_pdf is used, falling back to template1 if not found
+    const templateHtml = company.modelo_pdf && Object.values(pdfTemplates).includes(company.modelo_pdf)
+      ? company.modelo_pdf
       : pdfTemplates.template1;
 
     // Generate HTML with replaced placeholders
