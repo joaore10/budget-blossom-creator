@@ -4,10 +4,12 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { generatePreviewHTML } from "./preview-generator";
 
+// Function to handle PDF generation and optional download
 export const generatePDF = async (
   budget: Budget,
   company: Company,
-  alternativeBudget?: AlternativeBudget
+  alternativeBudget?: AlternativeBudget,
+  shouldDownload: boolean = false
 ) => {
   try {
     const filledHtml = generatePreviewHTML(budget, company, alternativeBudget);
@@ -67,8 +69,10 @@ export const generatePDF = async (
         heightLeft -= pageHeight;
       }
       
-      // Save PDF
-      pdf.save(fileName);
+      // Only save/download if requested
+      if (shouldDownload) {
+        pdf.save(fileName);
+      }
       
       return true;
     } finally {
@@ -82,3 +86,4 @@ export const generatePDF = async (
     return false;
   }
 };
+
