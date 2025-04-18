@@ -14,4 +14,3 @@ export const defaultPdfTemplate = {
 };
 
 export { pdfUtils } from './pdf-utils';
-

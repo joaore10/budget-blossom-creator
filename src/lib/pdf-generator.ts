@@ -2,7 +2,8 @@
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { Budget, Company, AlternativeBudget } from "@/types";
-import { pdfUtils } from "./pdf-templates";
+import { pdfUtils } from "./pdf-utils";
+import { pdfTemplates } from "./pdf-templates";
 
 export const generatePDF = async (
   budget: Budget,
@@ -15,9 +16,14 @@ export const generatePDF = async (
       ? alternativeBudget.itens_com_valores_alterados
       : budget.itens;
 
+    // Get the template based on company's modelo_pdf or use default template
+    const templateHtml = company.modelo_pdf && company.modelo_pdf in pdfTemplates
+      ? pdfTemplates[company.modelo_pdf as keyof typeof pdfTemplates]
+      : pdfTemplates.template1;
+
     // Generate HTML with replaced placeholders
     const filledHtml = pdfUtils.replacePlaceholders(
-      company.modelo_pdf,
+      templateHtml,
       company.nome,
       company.cnpj,
       company.representante,
