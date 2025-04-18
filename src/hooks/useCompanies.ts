@@ -18,7 +18,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
 
     const { error } = await supabase
       .from('companies')
-      .insert(newCompany);
+      .insert(newCompany as any);
 
     if (error) {
       console.error('Erro ao adicionar empresa:', error);
@@ -33,7 +33,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
   const updateCompany = useCallback(async (company: Company): Promise<void> => {
     const { error } = await supabase
       .from('companies')
-      .update(company)
+      .update(company as any)
       .eq('id', company.id);
 
     if (error) {

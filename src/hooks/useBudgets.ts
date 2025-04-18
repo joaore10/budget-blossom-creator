@@ -27,7 +27,7 @@ export function useBudgets() {
 
     const { error } = await supabase
       .from('budgets')
-      .insert(newBudget);
+      .insert(newBudget as any);
 
     if (error) {
       console.error('Erro ao adicionar orçamento:', error);
@@ -42,7 +42,7 @@ export function useBudgets() {
   const updateBudget = useCallback(async (budget: Budget): Promise<void> => {
     const { error } = await supabase
       .from('budgets')
-      .update(budget)
+      .update(budget as any)
       .eq('id', budget.id);
 
     if (error) {
@@ -129,7 +129,7 @@ export function useBudgets() {
     if (newAlternativeBudgets.length > 0) {
       const { error } = await supabase
         .from('alternative_budgets')
-        .insert(newAlternativeBudgets);
+        .insert(newAlternativeBudgets as any);
 
       if (error) {
         console.error('Erro ao gerar orçamentos alternativos:', error);
