@@ -1,3 +1,4 @@
+
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AlternativeBudget, Budget, BudgetItem, Company } from "@/types";
@@ -58,50 +59,70 @@ const initialCompanies: Company[] = [
   },
 ];
 
+// Helper function to safely save data to localStorage
+const saveToLocalStorage = (key: string, data: any) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    return true;
+  } catch (error) {
+    console.error(`Error saving ${key} data to localStorage:`, error);
+    toast.error(`Erro ao salvar dados de ${key}`);
+    return false;
+  }
+};
+
+// Helper function to safely load data from localStorage
+const loadFromLocalStorage = (key: string, defaultValue: any) => {
+  try {
+    const savedData = localStorage.getItem(key);
+    return savedData ? JSON.parse(savedData) : defaultValue;
+  } catch (error) {
+    console.error(`Error loading ${key} data from localStorage:`, error);
+    toast.error(`Erro ao carregar dados salvos de ${key}`);
+    return defaultValue;
+  }
+};
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [alternativeBudgets, setAlternativeBudgets] = useState<AlternativeBudget[]>([]);
+  const [dataInitialized, setDataInitialized] = useState(false);
 
   // Load saved data from localStorage on mount
   useEffect(() => {
-    try {
-      const savedCompanies = localStorage.getItem("companies");
-      const savedBudgets = localStorage.getItem("budgets");
-      const savedAlternativeBudgets = localStorage.getItem("alternativeBudgets");
+    if (dataInitialized) return;
+    
+    const savedCompanies = loadFromLocalStorage("companies", initialCompanies);
+    const savedBudgets = loadFromLocalStorage("budgets", []);
+    const savedAlternativeBudgets = loadFromLocalStorage("alternativeBudgets", []);
 
-      if (savedCompanies) {
-        setCompanies(JSON.parse(savedCompanies));
-      } else {
-        setCompanies(initialCompanies);
-      }
-
-      if (savedBudgets) {
-        setBudgets(JSON.parse(savedBudgets));
-      }
-
-      if (savedAlternativeBudgets) {
-        setAlternativeBudgets(JSON.parse(savedAlternativeBudgets));
-      }
-    } catch (error) {
-      console.error("Error loading data from localStorage:", error);
-      toast.error("Erro ao carregar dados salvos");
-      // Use initial data if load fails
-      setCompanies(initialCompanies);
-    }
-  }, []);
+    setCompanies(savedCompanies);
+    setBudgets(savedBudgets);
+    setAlternativeBudgets(savedAlternativeBudgets);
+    setDataInitialized(true);
+    
+    console.log("Data loaded from localStorage:", {
+      companies: savedCompanies.length,
+      budgets: savedBudgets.length,
+      alternativeBudgets: savedAlternativeBudgets.length
+    });
+  }, [dataInitialized]);
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
-    try {
-      localStorage.setItem("companies", JSON.stringify(companies));
-      localStorage.setItem("budgets", JSON.stringify(budgets));
-      localStorage.setItem("alternativeBudgets", JSON.stringify(alternativeBudgets));
-    } catch (error) {
-      console.error("Error saving data to localStorage:", error);
-      toast.error("Erro ao salvar dados");
-    }
-  }, [companies, budgets, alternativeBudgets]);
+    if (!dataInitialized) return;
+    
+    console.log("Saving data to localStorage:", {
+      companies: companies.length,
+      budgets: budgets.length,
+      alternativeBudgets: alternativeBudgets.length
+    });
+    
+    saveToLocalStorage("companies", companies);
+    saveToLocalStorage("budgets", budgets);
+    saveToLocalStorage("alternativeBudgets", alternativeBudgets);
+  }, [companies, budgets, alternativeBudgets, dataInitialized]);
 
   const addCompany = (
     company: Omit<Company, "id" | "modelo_pdf"> & { modelo_pdf?: string }
@@ -112,15 +133,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
       id,
       modelo_pdf: company.modelo_pdf || defaultPdfTemplate.html,
     };
-    setCompanies((prev) => [...prev, newCompany]);
+    
+    const updatedCompanies = [...companies, newCompany];
+    setCompanies(updatedCompanies);
+    saveToLocalStorage("companies", updatedCompanies);
+    
     toast.success("Empresa adicionada com sucesso");
     return id;
   };
 
   const updateCompany = (company: Company) => {
-    setCompanies((prev) =>
-      prev.map((c) => (c.id === company.id ? company : c))
-    );
+    const updatedCompanies = companies.map((c) => (c.id === company.id ? company : c));
+    setCompanies(updatedCompanies);
+    saveToLocalStorage("companies", updatedCompanies);
+    
     toast.success("Empresa atualizada com sucesso");
   };
 
@@ -138,7 +164,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setCompanies((prev) => prev.filter((c) => c.id !== id));
+    const updatedCompanies = companies.filter((c) => c.id !== id);
+    setCompanies(updatedCompanies);
+    saveToLocalStorage("companies", updatedCompanies);
+    
     toast.success("Empresa excluída com sucesso");
   };
 
@@ -160,16 +189,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ],
     };
 
-    // Update the state and ensure it's saved to localStorage synchronously
+    // Update the state and save to localStorage synchronously
     const updatedBudgets = [...budgets, newBudget];
     setBudgets(updatedBudgets);
-    
-    try {
-      localStorage.setItem("budgets", JSON.stringify(updatedBudgets));
-    } catch (error) {
-      console.error("Error saving budgets to localStorage:", error);
-      toast.error("Erro ao salvar dados");
-    }
+    saveToLocalStorage("budgets", updatedBudgets);
     
     toast.success("Orçamento criado com sucesso");
     return id;
@@ -179,35 +202,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
     // Remove any alternative budgets for this budget as they'll need to be regenerated
     const filteredAltBudgets = alternativeBudgets.filter((ab) => ab.orcamento_id !== budget.id);
     setAlternativeBudgets(filteredAltBudgets);
-    
-    try {
-      localStorage.setItem("alternativeBudgets", JSON.stringify(filteredAltBudgets));
-    } catch (error) {
-      console.error("Error saving alternate budgets to localStorage:", error);
-    }
+    saveToLocalStorage("alternativeBudgets", filteredAltBudgets);
 
     // Update budgets and save synchronously
     const updatedBudgets = budgets.map((b) => (b.id === budget.id ? budget : b));
     setBudgets(updatedBudgets);
-    
-    try {
-      localStorage.setItem("budgets", JSON.stringify(updatedBudgets));
-    } catch (error) {
-      console.error("Error saving budgets to localStorage:", error);
-      toast.error("Erro ao salvar dados");
-    }
+    saveToLocalStorage("budgets", updatedBudgets);
     
     toast.success("Orçamento atualizado com sucesso");
     return budget;
   };
 
   const deleteBudget = (id: string) => {
-    setBudgets((prev) => prev.filter((b) => b.id !== id));
+    const updatedBudgets = budgets.filter((b) => b.id !== id);
+    setBudgets(updatedBudgets);
+    saveToLocalStorage("budgets", updatedBudgets);
     
     // Delete all alternative budgets for this budget
-    setAlternativeBudgets((prev) =>
-      prev.filter((ab) => ab.orcamento_id !== id)
-    );
+    const updatedAltBudgets = alternativeBudgets.filter((ab) => ab.orcamento_id !== id);
+    setAlternativeBudgets(updatedAltBudgets);
+    saveToLocalStorage("alternativeBudgets", updatedAltBudgets);
     
     toast.success("Orçamento excluído com sucesso");
   };
@@ -291,17 +305,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const updatedAlternativeBudgets = [...filteredBudgets, ...newAlternativeBudgets];
     setAlternativeBudgets(updatedAlternativeBudgets);
     
-    // Save to localStorage
-    try {
-      localStorage.setItem("alternativeBudgets", JSON.stringify(updatedAlternativeBudgets));
-    } catch (error) {
-      console.error("Error saving alternative budgets to localStorage:", error);
-      toast.error("Erro ao salvar dados de orçamentos alternativos");
-    }
-
-    if (newAlternativeBudgetIds.length > 0) {
+    // Save to localStorage immediately to prevent data loss
+    const saved = saveToLocalStorage("alternativeBudgets", updatedAlternativeBudgets);
+    
+    if (saved && newAlternativeBudgetIds.length > 0) {
       toast.success(`${otherCompanyIds.length} orçamentos alternativos gerados`);
-    } else {
+    } else if (saved) {
       toast.info("Nenhuma empresa adicional selecionada para gerar orçamentos alternativos");
     }
     
