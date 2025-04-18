@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -54,11 +55,15 @@ const CompanyForm = () => {
           modelo_pdf: company.modelo_pdf,
         });
         
-        Object.entries(pdfTemplates).forEach(([key, template]) => {
+        // Find which template matches the stored HTML
+        // This logic isn't working correctly because we're storing HTML strings
+        // Let's improve this to identify templates by comparing the stored HTML
+        for (const [key, template] of Object.entries(pdfTemplates)) {
           if (company.modelo_pdf === template) {
             setSelectedTemplate(key);
+            break;
           }
-        });
+        }
       } else {
         toast.error("Empresa não encontrada");
         navigate("/empresas");
@@ -77,6 +82,7 @@ const CompanyForm = () => {
     setSelectedTemplate(templateKey);
     setFormData(prev => ({
       ...prev,
+      // This was storing the template object itself, we need to store the HTML string
       modelo_pdf: pdfTemplates[templateKey as keyof typeof pdfTemplates]
     }));
   };
