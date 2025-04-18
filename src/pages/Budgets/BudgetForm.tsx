@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -213,9 +214,21 @@ const BudgetForm = () => {
         });
       }
 
+      console.log("Budget ID after save:", budgetId);
+      console.log("Selected companies:", formData.empresas_selecionadas_ids);
+
+      // Only generate alternative budgets if there are additional companies selected
       if (formData.empresas_selecionadas_ids.length > 1) {
-        toast.info("Gerando orçamentos alternativos...");
-        generateAlternativeBudgets(budgetId);
+        console.log("Generating alternative budgets for ID:", budgetId);
+        // Wait a moment to ensure the budget is saved in state
+        setTimeout(() => {
+          try {
+            generateAlternativeBudgets(budgetId);
+          } catch (error) {
+            console.error("Error generating alternative budgets:", error);
+            toast.error("Erro ao gerar orçamentos alternativos");
+          }
+        }, 100);
       }
 
       navigate("/orcamentos");

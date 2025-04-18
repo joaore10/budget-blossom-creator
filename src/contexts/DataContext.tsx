@@ -1,3 +1,4 @@
+
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AlternativeBudget, Budget, BudgetItem, Company } from "@/types";
@@ -210,17 +211,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const generateAlternativeBudgets = (budgetId: string): string[] => {
+    console.log("Generating alternative budgets for budget ID:", budgetId);
     const budget = getBudgetById(budgetId);
     if (!budget) {
+      console.error("Budget not found with ID:", budgetId);
       toast.error("Orçamento não encontrado");
       return [];
     }
 
     // First company is the base
     const baseCompanyId = budget.empresa_base_id;
+    console.log("Base company ID:", baseCompanyId);
     const otherCompanyIds = budget.empresas_selecionadas_ids.filter(
       (id) => id !== baseCompanyId
     );
+    console.log("Other company IDs:", otherCompanyIds);
 
     // Clear any existing alternative budgets for this budget
     setAlternativeBudgets((prev) =>
@@ -255,6 +260,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       };
 
       setAlternativeBudgets((prev) => [...prev, newAltBudget]);
+      console.log("Added alternative budget:", newAltBudget);
     });
 
     if (newAlternativeBudgetIds.length > 0) {
