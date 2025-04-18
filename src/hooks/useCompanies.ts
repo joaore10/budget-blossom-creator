@@ -1,63 +1,67 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Company } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
+import { dbService } from '@/services/DatabaseService';
 import { toast } from 'sonner';
 
 export function useCompanies(initialCompanies: Company[] = []) {
   const [companies, setCompanies] = useState<Company[]>(initialCompanies);
 
+  // Carrega as empresas ao iniciar
+  useEffect(() => {
+    const loadCompanies = () => {
+      try {
+        const companiesData = dbService.getAllCompanies();
+        setCompanies(companiesData);
+      } catch (error) {
+        console.error('Erro ao carregar empresas:', error);
+        toast.error('Erro ao carregar empresas');
+      }
+    };
+
+    loadCompanies();
+  }, []);
+
   const addCompany = useCallback(async (
     company: Omit<Company, "id" | "modelo_pdf"> & { modelo_pdf?: string }
   ): Promise<string> => {
-    const newCompany = {
-      ...company,
-      id: crypto.randomUUID(),
-      modelo_pdf: company.modelo_pdf || undefined
-    };
-
-    const { error } = await (supabase as any)
-      .from('companies')
-      .insert(newCompany);
-
-    if (error) {
+    try {
+      const id = dbService.createCompany(company);
+      const newCompany = { ...company, id, modelo_pdf: company.modelo_pdf || undefined };
+      setCompanies(prev => [...prev, newCompany]);
+      toast.success('Empresa adicionada com sucesso');
+      return id;
+    } catch (error) {
       console.error('Erro ao adicionar empresa:', error);
       toast.error('Erro ao adicionar empresa');
       throw error;
     }
-
-    toast.success('Empresa adicionada com sucesso');
-    return newCompany.id;
   }, []);
 
   const updateCompany = useCallback(async (company: Company): Promise<void> => {
-    const { error } = await (supabase as any)
-      .from('companies')
-      .update(company)
-      .eq('id', company.id);
-
-    if (error) {
+    try {
+      dbService.updateCompany(company);
+      setCompanies(prev => 
+        prev.map(c => c.id === company.id ? company : c)
+      );
+      toast.success('Empresa atualizada com sucesso');
+    } catch (error) {
       console.error('Erro ao atualizar empresa:', error);
       toast.error('Erro ao atualizar empresa');
       throw error;
     }
-
-    toast.success('Empresa atualizada com sucesso');
   }, []);
 
   const deleteCompany = useCallback(async (id: string): Promise<void> => {
-    const { error } = await (supabase as any)
-      .from('companies')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
+    try {
+      dbService.deleteCompany(id);
+      setCompanies(prev => prev.filter(c => c.id !== id));
+      toast.success('Empresa excluída com sucesso');
+    } catch (error) {
       console.error('Erro ao excluir empresa:', error);
       toast.error('Erro ao excluir empresa');
       throw error;
     }
-
-    toast.success('Empresa excluída com sucesso');
   }, []);
 
   const getCompanyById = useCallback((id: string): Company | undefined => {

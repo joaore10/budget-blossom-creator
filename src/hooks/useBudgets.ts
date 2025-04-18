@@ -1,72 +1,83 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Budget, AlternativeBudget } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
+import { dbService } from '@/services/DatabaseService';
 import { toast } from 'sonner';
 
 export function useBudgets() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [alternativeBudgets, setAlternativeBudgets] = useState<AlternativeBudget[]>([]);
 
+  // Carrega os orçamentos ao iniciar
+  useEffect(() => {
+    const loadBudgets = () => {
+      try {
+        const budgetsData = dbService.getAllBudgets();
+        setBudgets(budgetsData);
+      } catch (error) {
+        console.error('Erro ao carregar orçamentos:', error);
+        toast.error('Erro ao carregar orçamentos');
+      }
+    };
+
+    loadBudgets();
+  }, []);
+
   const addBudget = useCallback(async (
     budget: Omit<Budget, "id" | "data_criacao" | "empresas_selecionadas_ids"> & {
       empresas_selecionadas_ids: string[];
     }
   ): Promise<string> => {
-    const newBudget = {
-      ...budget,
-      id: crypto.randomUUID(),
-      data_criacao: new Date().toISOString(),
-      empresas_selecionadas_ids: [
-        budget.empresa_base_id,
-        ...budget.empresas_selecionadas_ids.filter(
-          (id) => id !== budget.empresa_base_id
-        ),
-      ],
-    };
+    try {
+      const newBudget = {
+        ...budget,
+        data_criacao: new Date().toISOString(),
+        empresas_selecionadas_ids: [
+          budget.empresa_base_id,
+          ...budget.empresas_selecionadas_ids.filter(
+            (id) => id !== budget.empresa_base_id
+          ),
+        ],
+      };
 
-    const { error } = await (supabase as any)
-      .from('budgets')
-      .insert(newBudget);
-
-    if (error) {
+      const id = dbService.createBudget(newBudget);
+      setBudgets(prev => [...prev, { ...newBudget, id }]);
+      toast.success('Orçamento criado com sucesso');
+      return id;
+    } catch (error) {
       console.error('Erro ao adicionar orçamento:', error);
       toast.error('Erro ao criar orçamento');
       throw error;
     }
-
-    toast.success('Orçamento criado com sucesso');
-    return newBudget.id;
   }, []);
 
   const updateBudget = useCallback(async (budget: Budget): Promise<void> => {
-    const { error } = await (supabase as any)
-      .from('budgets')
-      .update(budget)
-      .eq('id', budget.id);
-
-    if (error) {
+    try {
+      dbService.updateBudget(budget);
+      setBudgets(prev => 
+        prev.map(b => b.id === budget.id ? budget : b)
+      );
+      toast.success('Orçamento atualizado com sucesso');
+    } catch (error) {
       console.error('Erro ao atualizar orçamento:', error);
       toast.error('Erro ao atualizar orçamento');
       throw error;
     }
-
-    toast.success('Orçamento atualizado com sucesso');
   }, []);
 
   const deleteBudget = useCallback(async (id: string): Promise<void> => {
-    const { error } = await (supabase as any)
-      .from('budgets')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
+    try {
+      dbService.deleteBudget(id);
+      setBudgets(prev => prev.filter(b => b.id !== id));
+      setAlternativeBudgets(prev => 
+        prev.filter(ab => ab.orcamento_id !== id)
+      );
+      toast.success('Orçamento excluído com sucesso');
+    } catch (error) {
       console.error('Erro ao excluir orçamento:', error);
       toast.error('Erro ao excluir orçamento');
       throw error;
     }
-
-    toast.success('Orçamento excluído com sucesso');
   }, []);
 
   const getBudgetById = useCallback((id: string): Budget | undefined => {
@@ -93,56 +104,55 @@ export function useBudgets() {
       return [];
     }
 
-    const baseCompanyId = budget.empresa_base_id;
-    const otherCompanyIds = budget.empresas_selecionadas_ids.filter(
-      (id) => id !== baseCompanyId
-    );
+    try {
+      const baseCompanyId = budget.empresa_base_id;
+      const otherCompanyIds = budget.empresas_selecionadas_ids.filter(
+        (id) => id !== baseCompanyId
+      );
 
-    const newAlternativeBudgetIds: string[] = [];
-    const newAlternativeBudgets: AlternativeBudget[] = [];
+      const newIds: string[] = [];
 
-    for (const companyId of otherCompanyIds) {
-      const altBudgetId = crypto.randomUUID();
-      newAlternativeBudgetIds.push(altBudgetId);
+      for (const companyId of otherCompanyIds) {
+        const alternativeItems = budget.itens.map((item) => {
+          const increasePercentage = 5 + Math.random() * 15;
+          const increaseFactor = 1 + increasePercentage / 100;
+          
+          return {
+            ...item,
+            id: crypto.randomUUID(),
+            valor_unitario: Math.ceil(item.valor_unitario * increaseFactor * 100) / 100,
+          };
+        });
 
-      const alternativeItems = budget.itens.map((item) => {
-        const increasePercentage = 5 + Math.random() * 15;
-        const increaseFactor = 1 + increasePercentage / 100;
-        
-        return {
-          ...item,
-          id: crypto.randomUUID(),
-          valor_unitario: Math.ceil(item.valor_unitario * increaseFactor * 100) / 100,
+        const newAltBudget: Omit<AlternativeBudget, "id"> = {
+          orcamento_id: budgetId,
+          empresa_id: companyId,
+          itens_com_valores_alterados: alternativeItems,
         };
-      });
 
-      const newAltBudget: AlternativeBudget = {
-        id: altBudgetId,
-        orcamento_id: budgetId,
-        empresa_id: companyId,
-        itens_com_valores_alterados: alternativeItems,
-      };
-
-      newAlternativeBudgets.push(newAltBudget);
-    }
-
-    if (newAlternativeBudgets.length > 0) {
-      const { error } = await (supabase as any)
-        .from('alternative_budgets')
-        .insert(newAlternativeBudgets);
-
-      if (error) {
-        console.error('Erro ao gerar orçamentos alternativos:', error);
-        toast.error('Erro ao gerar orçamentos alternativos');
-        throw error;
+        const id = dbService.createAlternativeBudget(newAltBudget);
+        newIds.push(id);
       }
 
-      toast.success(`${otherCompanyIds.length} orçamentos alternativos gerados`);
-    } else {
-      toast.info('Nenhuma empresa adicional selecionada para gerar orçamentos alternativos');
-    }
+      // Atualiza a lista de orçamentos alternativos
+      const updatedAlternatives = dbService.getAlternativeBudgets(budgetId);
+      setAlternativeBudgets(prev => [
+        ...prev.filter(ab => ab.orcamento_id !== budgetId),
+        ...updatedAlternatives
+      ]);
 
-    return newAlternativeBudgetIds;
+      if (newIds.length > 0) {
+        toast.success(`${newIds.length} orçamentos alternativos gerados`);
+      } else {
+        toast.info('Nenhuma empresa adicional selecionada para gerar orçamentos alternativos');
+      }
+
+      return newIds;
+    } catch (error) {
+      console.error('Erro ao gerar orçamentos alternativos:', error);
+      toast.error('Erro ao gerar orçamentos alternativos');
+      throw error;
+    }
   }, [budgets]);
 
   return {
