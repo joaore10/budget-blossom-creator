@@ -4,7 +4,69 @@
 
 **URL**: https://lovable.dev/projects/a0da220e-9c14-42ad-a23a-8bce329f4ef5
 
-## How can I edit this code?
+## Rodando o Projeto Localmente
+
+### Pré-requisitos
+
+- Node.js & npm - [instale via nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Git instalado na sua máquina
+
+### Passos para Execução Local
+
+1. Clone o repositório:
+```sh
+git clone <YOUR_GIT_URL>
+cd <YOUR_PROJECT_NAME>
+```
+
+2. Instale as dependências:
+```sh
+npm install
+```
+
+3. Configure o Banco de Dados SQLite Local:
+
+O projeto usa SQLite para armazenamento local dos dados. O arquivo do banco de dados será criado automaticamente em `data/local.sqlite` quando você iniciar o projeto pela primeira vez.
+
+> **Importante**: O arquivo `data/local.sqlite` já está configurado no `.gitignore` para garantir que seus dados locais não sejam enviados para o repositório.
+
+4. Inicie o servidor de desenvolvimento:
+```sh
+npm run dev
+```
+
+5. Acesse o projeto em seu navegador:
+```
+http://localhost:5173
+```
+
+### Persistência de Dados
+
+- Todos os dados que você adicionar serão salvos automaticamente no arquivo `data/local.sqlite`
+- Este arquivo contém todo o banco de dados local e persiste entre as execuções do projeto
+- Você pode fazer backup deste arquivo copiando `data/local.sqlite` para um local seguro
+
+### Estrutura do Banco de Dados Local
+
+O banco SQLite local contém as seguintes tabelas:
+- `companies`: Armazena as informações das empresas
+- `budgets`: Armazena os orçamentos
+- `alternative_budgets`: Armazena os orçamentos alternativos
+
+### Dados Iniciais (Seed)
+
+Para popular o banco com dados iniciais de exemplo, você pode:
+
+1. Acessar a página inicial do projeto
+2. Clicar no botão "Cadastrar Empresas Iniciais"
+
+Ou executar manualmente através do console:
+```javascript
+import { seedInitialData } from "@/utils/seedData";
+await seedInitialData();
+```
+
+## Como editar este código?
 
 There are several ways of editing your application.
 
@@ -50,7 +112,7 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Que tecnologias são usadas neste projeto?
 
 This project is built with:
 
@@ -60,11 +122,11 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
+## Como faço deploy deste projeto?
 
 Simply open [Lovable](https://lovable.dev/projects/a0da220e-9c14-42ad-a23a-8bce329f4ef5) and click on Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
+## Posso conectar um domínio personalizado ao meu projeto Lovable?
 
 Yes, you can!
 
