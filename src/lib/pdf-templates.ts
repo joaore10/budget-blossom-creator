@@ -1,4 +1,3 @@
-
 // Define diferent HTML template options
 export const pdfTemplates = {
   template1: `
@@ -12,151 +11,83 @@ export const pdfTemplates = {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 40px;
-      color: #1A1F2C;
+      color: #333;
       line-height: 1.6;
     }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      padding: 20px;
-      background: #F6F6F7;
-      border-radius: 8px;
-      margin-bottom: 30px;
-    }
-    .company-info {
-      flex: 1;
-    }
-    .company-info h2 {
-      color: #403E43;
-      margin: 0 0 10px 0;
-      font-size: 24px;
-    }
-    .company-info p {
-      margin: 5px 0;
-      color: #8A898C;
-      font-size: 14px;
-    }
-    .document-info {
-      text-align: right;
-      padding: 10px 20px;
-      background: #fff;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .document-info h1 {
-      color: #1EAEDB;
-      margin: 0;
+    h2 {
+      color: #8B5CF6;
       font-size: 28px;
-    }
-    .document-info p {
-      margin: 5px 0;
-      color: #8A898C;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #E5DEFF;
+      padding-bottom: 10px;
     }
     .client-info {
-      background: #fff;
+      background: #F8F9FA;
       padding: 20px;
       border-radius: 8px;
-      border: 1px solid #E5DEFF;
       margin-bottom: 30px;
     }
-    .client-info h3 {
-      color: #403E43;
-      margin: 0 0 10px 0;
+    .client-info p {
+      margin: 5px 0;
     }
     table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      margin: 20px 0;
-      background: #fff;
+      border-collapse: collapse;
+      margin: 25px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     th {
       background: #8B5CF6;
       color: white;
-      font-weight: 600;
-      text-align: left;
       padding: 15px;
-      font-size: 14px;
+      text-align: left;
     }
     td {
       padding: 12px 15px;
-      border-bottom: 1px solid #F1F0FB;
-      color: #403E43;
-      font-size: 14px;
+      border-bottom: 1px solid #E5DEFF;
     }
     tr:last-child td {
       border-bottom: none;
     }
-    tr:hover td {
-      background: #F6F6F7;
-    }
     .total {
-      text-align: right;
-      margin: 30px 0;
-      padding: 20px;
-      background: #F6F6F7;
-      border-radius: 8px;
-      font-size: 18px;
-      color: #403E43;
-    }
-    .total strong {
+      font-size: 20px;
       color: #8B5CF6;
-      font-size: 22px;
-      margin-left: 10px;
+      text-align: right;
+      margin: 20px 0;
+      padding: 15px;
+      background: #F8F9FA;
+      border-radius: 8px;
     }
     .footer {
       margin-top: 50px;
-      padding-top: 30px;
-      border-top: 2px solid #E5DEFF;
+      text-align: center;
+      color: #666;
     }
     .signature {
-      text-align: center;
-      color: #8A898C;
-    }
-    .signature p {
-      margin: 5px 0;
-    }
-    .conditions {
       margin-top: 30px;
-      padding: 20px;
-      background: #F6F6F7;
-      border-radius: 8px;
-      font-size: 12px;
-      color: #8A898C;
+      padding-top: 20px;
+      border-top: 2px solid #E5DEFF;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="company-info">
-      <h2>{{NOME_EMPRESA}}</h2>
-      <p>CNPJ: {{CNPJ_EMPRESA}}</p>
-      <p>{{ENDERECO_EMPRESA}}</p>
-    </div>
-    <div class="document-info">
-      <h1>ORÇAMENTO</h1>
-      <p>Nº {{NUMERO}}</p>
-      <p>Data: {{DATA}}</p>
-    </div>
-  </div>
+  <h2>ORÇAMENTO Nº {{NUMERO}}</h2>
   
   <div class="client-info">
-    <h3>DADOS DO CLIENTE</h3>
-    <p>{{NOME_CLIENTE}}</p>
+    <p><strong>A/C:</strong> {{NOME_CLIENTE}}</p>
+    <p>Prezado cliente, enviamos nossa proposta comercial referente ao orçamento solicitado.</p>
   </div>
-  
+
   <table>
     <thead>
       <tr>
         <th>Item</th>
         <th>Quantidade</th>
         <th>Unidade</th>
-        <th>Descrição</th>
-        <th>Valor Unit.</th>
+        <th>Valor Unitário</th>
         <th>Total</th>
       </tr>
     </thead>
@@ -164,25 +95,17 @@ export const pdfTemplates = {
       {{ITENS}}
     </tbody>
   </table>
-  
+
   <div class="total">
-    Valor Total do Orçamento:<strong>R$ {{VALOR_TOTAL}}</strong>
+    <strong>Valor Total da Proposta:</strong> R$ {{VALOR_TOTAL}}
   </div>
-  
-  <div class="footer">
-    <div class="signature">
-      <p>{{CIDADE}}, {{DATA}}</p>
-      <p>_______________________________________________</p>
-      <p>{{NOME_EMPRESA}}</p>
-      <p>CNPJ: {{CNPJ_EMPRESA}}</p>
-      <p>{{REPRESENTANTE}}</p>
-    </div>
-    
-    <div class="conditions">
-      <p>* Este orçamento tem validade de 15 dias.</p>
-      <p>* Os valores apresentados podem sofrer alterações sem aviso prévio.</p>
-      <p>* Prazo de entrega a combinar após aprovação do orçamento.</p>
-    </div>
+
+  <div class="signature">
+    <p>{{CIDADE}}, {{DATA}}</p>
+    <p>_______________________________________________</p>
+    <p><strong>{{REPRESENTANTE}}</strong></p>
+    <p>{{NOME_EMPRESA}}</p>
+    <p>CNPJ: {{CNPJ_EMPRESA}}</p>
   </div>
 </body>
 </html>
@@ -199,128 +122,94 @@ export const pdfTemplates = {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 40px;
-      background-color: #fff;
-      color: #1A1F2C;
+      color: #2D3748;
+      line-height: 1.6;
     }
     .header {
-      background: linear-gradient(135deg, #8B5CF6 0%, #6E59A5 100%);
+      background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
       color: white;
-      padding: 30px;
+      padding: 25px;
       border-radius: 10px;
       margin-bottom: 30px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .header h1 {
+    .header h2 {
       margin: 0;
-      font-size: 32px;
-      margin-bottom: 15px;
+      font-size: 24px;
     }
     .header p {
-      margin: 5px 0;
+      margin: 5px 0 0 0;
       opacity: 0.9;
-      font-size: 14px;
     }
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin: 30px 0;
-    }
-    .info-box {
-      background: #F6F6F7;
+    .info-section {
+      background: #F8FAFC;
       padding: 20px;
       border-radius: 8px;
-      border: 1px solid #E5DEFF;
-    }
-    .info-box h3 {
-      color: #8B5CF6;
-      margin: 0 0 15px 0;
-      font-size: 18px;
-    }
-    .info-box p {
-      margin: 5px 0;
-      color: #403E43;
+      margin-bottom: 25px;
+      border: 1px solid #E2E8F0;
     }
     table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      margin: 30px 0;
-      border: 1px solid #E5DEFF;
+      margin: 25px 0;
+      background: white;
       border-radius: 8px;
       overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     th {
-      background: #7E69AB;
+      background: #7C3AED;
       color: white;
       padding: 15px;
-      text-align: left;
       font-weight: 500;
+      text-align: left;
     }
     td {
       padding: 12px 15px;
-      border-bottom: 1px solid #E5DEFF;
-    }
-    tr:nth-child(even) td {
-      background: #F6F6F7;
+      border-bottom: 1px solid #E2E8F0;
     }
     tr:last-child td {
       border-bottom: none;
     }
-    .total-box {
-      background: #8B5CF6;
-      color: white;
-      padding: 20px 30px;
-      border-radius: 8px;
+    .total-section {
       text-align: right;
+      padding: 20px;
+      background: #F8FAFC;
+      border-radius: 8px;
       margin: 30px 0;
-      box-shadow: 0 4px 6px rgba(139,92,246,0.2);
+      border: 1px solid #E2E8F0;
     }
-    .total-box p {
-      margin: 0;
-      font-size: 24px;
-      font-weight: bold;
+    .total-section strong {
+      font-size: 20px;
+      color: #7C3AED;
     }
-    .footer {
-      margin-top: 50px;
-      padding-top: 30px;
-      border-top: 2px dashed #E5DEFF;
-      text-align: center;
-    }
-    .signature-line {
-      margin: 20px 0;
-      border-bottom: 2px solid #8B5CF6;
-      width: 300px;
-      display: inline-block;
-    }
-    .notes {
-      background: #F6F6F7;
+    .observations {
+      background: #F8FAFC;
       padding: 20px;
       border-radius: 8px;
-      margin-top: 30px;
-      font-size: 12px;
-      color: #666;
+      margin: 30px 0;
+      font-size: 14px;
+      color: #4A5568;
+      border: 1px solid #E2E8F0;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 2px dashed #E2E8F0;
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>{{NOME_EMPRESA}}</h1>
-    <p>CNPJ: {{CNPJ_EMPRESA}}</p>
-    <p>{{ENDERECO_EMPRESA}}</p>
+    <h2>ORÇAMENTO Nº {{NUMERO}}</h2>
+    <p>Data: {{DATA}}</p>
   </div>
 
-  <div class="info-grid">
-    <div class="info-box">
-      <h3>ORÇAMENTO</h3>
-      <p><strong>Número:</strong> {{NUMERO}}</p>
-      <p><strong>Data:</strong> {{DATA}}</p>
-    </div>
-
-    <div class="info-box">
-      <h3>CLIENTE</h3>
-      <p>{{NOME_CLIENTE}}</p>
-    </div>
+  <div class="info-section">
+    <p><strong>Cliente:</strong> {{NOME_CLIENTE}}</p>
+    <p><strong>Empresa:</strong> {{NOME_EMPRESA}}</p>
+    <p><strong>CNPJ:</strong> {{CNPJ_EMPRESA}}</p>
   </div>
 
   <table>
@@ -329,7 +218,7 @@ export const pdfTemplates = {
         <th>Quantidade</th>
         <th>Unidade</th>
         <th>Descrição</th>
-        <th>Valor Unit.</th>
+        <th>Valor Unitário</th>
         <th>Total</th>
       </tr>
     </thead>
@@ -338,22 +227,25 @@ export const pdfTemplates = {
     </tbody>
   </table>
 
-  <div class="total-box">
-    <p>Total: R$ {{VALOR_TOTAL}}</p>
+  <div class="total-section">
+    <strong>Valor Total: R$ {{VALOR_TOTAL}}</strong>
+  </div>
+
+  <div class="observations">
+    <p><strong>Observações:</strong></p>
+    <ul>
+      <li>Este orçamento tem validade de 15 dias a partir da data de emissão.</li>
+      <li>Valores sujeitos a alteração sem aviso prévio.</li>
+      <li>Prazo de entrega a combinar após aprovação do orçamento.</li>
+    </ul>
   </div>
 
   <div class="footer">
     <p>{{CIDADE}}, {{DATA}}</p>
-    <div class="signature-line"></div>
-    <p>{{REPRESENTANTE}}</p>
+    <p>_______________________________________________</p>
+    <p><strong>{{REPRESENTANTE}}</strong></p>
     <p>{{NOME_EMPRESA}}</p>
-    <p>{{CNPJ_EMPRESA}}</p>
-
-    <div class="notes">
-      <p>• Orçamento válido por 15 dias</p>
-      <p>• Formas de pagamento a combinar</p>
-      <p>• Prazo de entrega: conforme negociação após aprovação</p>
-    </div>
+    <p>CNPJ: {{CNPJ_EMPRESA}}</p>
   </div>
 </body>
 </html>
@@ -370,62 +262,53 @@ export const pdfTemplates = {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 40px;
-      background: #fff;
       color: #1A1F2C;
+      line-height: 1.6;
+      background: #FFFFFF;
     }
     .container {
       max-width: 1000px;
       margin: 0 auto;
     }
     .header {
-      text-align: center;
-      padding: 30px;
-      border-bottom: 3px solid #8B5CF6;
-      margin-bottom: 40px;
-    }
-    .header h1 {
-      color: #8B5CF6;
-      font-size: 36px;
-      margin: 0;
-      margin-bottom: 15px;
-    }
-    .company-details {
-      color: #666;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    .document-details {
-      background: #F6F6F7;
-      border-left: 4px solid #8B5CF6;
-      padding: 20px;
-      margin: 30px 0;
-    }
-    .document-details .number {
-      font-size: 24px;
-      color: #8B5CF6;
-      margin-bottom: 10px;
-    }
-    .client-section {
-      background: #fff;
-      border: 1px solid #E5DEFF;
-      border-radius: 8px;
-      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 25px;
+      background: #8B5CF6;
+      color: white;
+      border-radius: 10px;
       margin-bottom: 30px;
     }
-    .client-section h2 {
-      color: #8B5CF6;
-      margin: 0 0 15px 0;
-      font-size: 20px;
+    .header-left h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+    .header-right {
+      text-align: right;
+    }
+    .header-right p {
+      margin: 5px 0;
+    }
+    .client-details {
+      background: #F6F6F7;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 1px solid #E5DEFF;
     }
     table {
       width: 100%;
-      border-collapse: collapse;
-      margin: 30px 0;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 25px 0;
       background: white;
-      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      border: 1px solid #E5DEFF;
+      border-radius: 8px;
+      overflow: hidden;
     }
     th {
-      background: #7E69AB;
+      background: #7C3AED;
       color: white;
       padding: 15px;
       text-align: left;
@@ -433,81 +316,73 @@ export const pdfTemplates = {
     }
     td {
       padding: 12px 15px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #E5DEFF;
+    }
+    tr:nth-child(even) {
+      background: #F8F9FA;
     }
     tr:last-child td {
       border-bottom: none;
     }
     .total-section {
-      background: #8B5CF6;
+      display: flex;
+      justify-content: flex-end;
+      padding: 20px;
+      background: #7C3AED;
       color: white;
-      padding: 20px 30px;
       border-radius: 8px;
-      text-align: right;
-      font-size: 24px;
       margin: 30px 0;
-      box-shadow: 0 4px 6px rgba(139,92,246,0.2);
+      font-size: 20px;
     }
-    .signature-section {
-      margin-top: 60px;
+    .validity {
+      background: #F6F6F7;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-size: 14px;
+      color: #666;
       text-align: center;
     }
+    .footer {
+      margin-top: 50px;
+      padding-top: 30px;
+      border-top: 2px solid #E5DEFF;
+      text-align: center;
+    }
+    .signature-area {
+      margin: 20px 0;
+    }
     .signature-line {
-      width: 60%;
-      margin: 20px auto;
+      width: 300px;
+      margin: 10px auto;
       border-bottom: 2px solid #8B5CF6;
-    }
-    .terms {
-      margin-top: 40px;
-      padding: 20px;
-      background: #F6F6F7;
-      border-radius: 8px;
-      font-size: 12px;
-      color: #666;
-    }
-    .terms ul {
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-    }
-    .terms li {
-      margin-bottom: 8px;
-      padding-left: 15px;
-      position: relative;
-    }
-    .terms li:before {
-      content: "•";
-      color: #8B5CF6;
-      position: absolute;
-      left: 0;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>{{NOME_EMPRESA}}</h1>
-      <div class="company-details">
-        <p>CNPJ: {{CNPJ_EMPRESA}}</p>
-        <p>{{ENDERECO_EMPRESA}}</p>
+      <div class="header-left">
+        <h2>ORÇAMENTO</h2>
+      </div>
+      <div class="header-right">
+        <p>Nº {{NUMERO}}</p>
+        <p>{{DATA}}</p>
       </div>
     </div>
 
-    <div class="document-details">
-      <div class="number">Orçamento Nº {{NUMERO}}</div>
-      <p>Data de Emissão: {{DATA}}</p>
-    </div>
-
-    <div class="client-section">
-      <h2>Informações do Cliente</h2>
-      <p>{{NOME_CLIENTE}}</p>
+    <div class="client-details">
+      <h3>Dados do Cliente</h3>
+      <p><strong>Nome:</strong> {{NOME_CLIENTE}}</p>
+      <p><strong>Empresa:</strong> {{NOME_EMPRESA}}</p>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th>Quantidade</th>
+          <th>#</th>
           <th>Descrição</th>
+          <th>Quantidade</th>
           <th>Valor Unitário</th>
           <th>Total</th>
         </tr>
@@ -518,29 +393,26 @@ export const pdfTemplates = {
     </table>
 
     <div class="total-section">
-      Valor Total: R$ {{VALOR_TOTAL}}
+      <span>Valor Total: R$ {{VALOR_TOTAL}}</span>
     </div>
 
-    <div class="signature-section">
+    <div class="validity">
+      Este orçamento é válido por 15 dias corridos a partir da data de emissão.
+    </div>
+
+    <div class="footer">
       <p>{{CIDADE}}, {{DATA}}</p>
-      <div class="signature-line"></div>
-      <p>{{REPRESENTANTE}}</p>
-      <p>{{NOME_EMPRESA}}</p>
-      <p>{{CNPJ_EMPRESA}}</p>
-    </div>
-
-    <div class="terms">
-      <ul>
-        <li>Orçamento válido por 15 dias a partir da data de emissão</li>
-        <li>Valores sujeitos a alteração sem aviso prévio</li>
-        <li>Prazo de entrega a ser definido após aprovação do orçamento</li>
-        <li>Forma de pagamento a combinar</li>
-      </ul>
+      <div class="signature-area">
+        <div class="signature-line"></div>
+        <p><strong>{{REPRESENTANTE}}</strong></p>
+        <p>{{NOME_EMPRESA}}</p>
+        <p>CNPJ: {{CNPJ_EMPRESA}}</p>
+      </div>
     </div>
   </div>
 </body>
 </html>
-`
+`,
 };
 
 export const defaultPdfTemplate = {
