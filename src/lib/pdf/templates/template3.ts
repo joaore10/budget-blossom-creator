@@ -62,7 +62,7 @@ export const template3 = `
     }
   </style>
 </head>
-<body>
+<body class="pdf-content">
   <div class="container">
     <div class="header">
       <h2>ORÇAMENTO</h2>

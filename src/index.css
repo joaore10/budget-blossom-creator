@@ -103,3 +103,30 @@
 .animate-fade-enter {
   animation: fade-in 0.3s ease-out;
 }
+
+/* Isolamento de estilos para previsualização de PDF */
+.pdf-preview-container {
+  position: relative;
+  z-index: 10;
+}
+
+/* Garantindo que os estilos de tabela do orçamento não afetem as tabelas da UI */
+.pdf-preview-container table,
+.pdf-preview-container th,
+.pdf-preview-container td {
+  /* Reseta estilos para não afetar os componentes de UI */
+  all: revert;
+}
+
+/* Não deixa os estilos da tabela PDF afetar as tabelas da UI */
+:not(.pdf-content) table {
+  width: 100%;
+  border-collapse: separate;
+}
+
+:not(.pdf-content) th,
+:not(.pdf-content) td {
+  all: revert;
+  border-collapse: separate;
+}
+

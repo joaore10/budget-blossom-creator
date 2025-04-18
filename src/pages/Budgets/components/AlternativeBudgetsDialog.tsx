@@ -107,7 +107,7 @@ const AlternativeBudgetsDialog = ({
                             <SheetTitle>Prévia do Orçamento</SheetTitle>
                           </SheetHeader>
                           <div 
-                            className="mt-4 overflow-auto max-h-[calc(100vh-100px)]"
+                            className="mt-4 overflow-auto max-h-[calc(100vh-100px)] pdf-preview-container"
                             dangerouslySetInnerHTML={{ __html: previewHtml }}
                           />
                         </SheetContent>
@@ -155,7 +155,7 @@ const AlternativeBudgetsDialog = ({
                                 <SheetTitle>Prévia do Orçamento</SheetTitle>
                               </SheetHeader>
                               <div 
-                                className="mt-4 overflow-auto max-h-[calc(100vh-100px)]"
+                                className="mt-4 overflow-auto max-h-[calc(100vh-100px)] pdf-preview-container"
                                 dangerouslySetInnerHTML={{ __html: previewHtml }}
                               />
                             </SheetContent>

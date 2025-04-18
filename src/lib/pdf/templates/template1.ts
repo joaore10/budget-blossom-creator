@@ -56,7 +56,7 @@ export const template1 = `
     }
   </style>
 </head>
-<body>
+<body class="pdf-content">
   <div class="header">
     <h2>ORÇAMENTO Nº {{NUMERO}}</h2>
     <p>{{DATA}}</p>

@@ -1,13 +1,13 @@
 
 export const commonStyles = `
-  body {
+  .pdf-content {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 40px;
     color: #333;
     line-height: 1.6;
   }
-  table {
+  .pdf-content table {
     width: 100%;
     border-collapse: collapse;
     margin: 25px 0;
@@ -17,23 +17,23 @@ export const commonStyles = `
     table-layout: fixed;
     page-break-inside: avoid;
   }
-  th {
+  .pdf-content th {
     background: #8B5CF6;
     color: white;
     padding: 15px;
     text-align: left;
   }
-  td {
+  .pdf-content td {
     padding: 12px 15px;
     border-bottom: 1px solid #E5DEFF;
   }
-  tr:last-child td {
+  .pdf-content tr:last-child td {
     border-bottom: none;
   }
-  tr {
+  .pdf-content tr {
     page-break-inside: avoid;
   }
-  h2 {
+  .pdf-content h2 {
     color: #8B5CF6;
     font-size: 28px;
     margin-bottom: 30px;
@@ -45,7 +45,7 @@ export const commonStyles = `
       size: A4;
       margin: 1cm;
     }
-    body {
+    .pdf-content {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
