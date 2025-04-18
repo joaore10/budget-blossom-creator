@@ -89,31 +89,59 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [alternativeBudgets, setAlternativeBudgets] = useState<AlternativeBudget[]>([]);
   const [dataInitialized, setDataInitialized] = useState(false);
 
+  // Função para forçar o recarregamento de dados do localStorage
+  const reloadFromLocalStorage = () => {
+    try {
+      const savedCompanies = loadFromLocalStorage("companies", initialCompanies);
+      const savedBudgets = loadFromLocalStorage("budgets", []);
+      const savedAlternativeBudgets = loadFromLocalStorage("alternativeBudgets", []);
+
+      setCompanies(savedCompanies);
+      setBudgets(savedBudgets);
+      setAlternativeBudgets(savedAlternativeBudgets);
+      
+      console.log("Dados recarregados do localStorage:", {
+        companies: savedCompanies.length,
+        budgets: savedBudgets.length,
+        alternativeBudgets: savedAlternativeBudgets.length
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Erro ao recarregar dados:", error);
+      return false;
+    }
+  };
+
   // Load saved data from localStorage on mount
   useEffect(() => {
     if (dataInitialized) return;
     
-    const savedCompanies = loadFromLocalStorage("companies", initialCompanies);
-    const savedBudgets = loadFromLocalStorage("budgets", []);
-    const savedAlternativeBudgets = loadFromLocalStorage("alternativeBudgets", []);
-
-    setCompanies(savedCompanies);
-    setBudgets(savedBudgets);
-    setAlternativeBudgets(savedAlternativeBudgets);
-    setDataInitialized(true);
+    const loadSuccess = reloadFromLocalStorage();
+    if (loadSuccess) {
+      setDataInitialized(true);
+    }
     
-    console.log("Data loaded from localStorage:", {
-      companies: savedCompanies.length,
-      budgets: savedBudgets.length,
-      alternativeBudgets: savedAlternativeBudgets.length
-    });
+    // Adicione um listener para eventos de storage para detectar alterações feitas em outras abas/janelas
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "budgets" || event.key === "companies" || event.key === "alternativeBudgets") {
+        console.log("Detected localStorage change in another tab:", event.key);
+        reloadFromLocalStorage();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [dataInitialized]);
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
     if (!dataInitialized) return;
     
-    console.log("Saving data to localStorage:", {
+    console.log("Salvando dados no localStorage:", {
       companies: companies.length,
       budgets: budgets.length,
       alternativeBudgets: alternativeBudgets.length
@@ -193,6 +221,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const updatedBudgets = [...budgets, newBudget];
     setBudgets(updatedBudgets);
     saveToLocalStorage("budgets", updatedBudgets);
+    
+    console.log("Orçamento adicionado com sucesso:", newBudget);
+    console.log("Total de orçamentos após adição:", updatedBudgets.length);
     
     toast.success("Orçamento criado com sucesso");
     return id;
