@@ -1,4 +1,3 @@
-
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AlternativeBudget, Budget, BudgetItem, Company } from "@/types";
@@ -235,13 +234,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const altBudgetId = uuidv4();
       newAlternativeBudgetIds.push(altBudgetId);
 
+      // Create alternative items with different prices for each company
       const alternativeItems: BudgetItem[] = budget.itens.map((item) => {
-        // Random percentage increase between 5% and 15%
-        const increasePercentage = 5 + Math.random() * 10;
+        // Each company gets a different random percentage between 5% and 20%
+        const increasePercentage = 5 + Math.random() * 15;
         const increaseFactor = 1 + increasePercentage / 100;
         
         return {
           ...item,
+          id: uuidv4(), // Generate a new ID for each item
           valor_unitario: Math.ceil(item.valor_unitario * increaseFactor * 100) / 100,
         };
       });
@@ -256,7 +257,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setAlternativeBudgets((prev) => [...prev, newAltBudget]);
     });
 
-    toast.success(`${otherCompanyIds.length} orçamentos alternativos gerados`);
+    if (newAlternativeBudgetIds.length > 0) {
+      toast.success(`${otherCompanyIds.length} orçamentos alternativos gerados`);
+    } else {
+      toast.info("Nenhuma empresa adicional selecionada para gerar orçamentos alternativos");
+    }
+    
     return newAlternativeBudgetIds;
   };
 

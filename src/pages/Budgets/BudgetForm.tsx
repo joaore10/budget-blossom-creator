@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -64,7 +63,6 @@ const BudgetForm = () => {
         navigate("/orcamentos");
       }
     } else if (companies.length > 0) {
-      // Default to first company for new budgets
       setFormData((prev) => ({
         ...prev,
         empresa_base_id: companies[0].id,
@@ -81,7 +79,6 @@ const BudgetForm = () => {
   };
 
   const handleBaseCompanyChange = (value: string) => {
-    // Always include base company in selected companies
     setFormData((prev) => ({
       ...prev,
       empresa_base_id: value,
@@ -103,7 +100,6 @@ const BudgetForm = () => {
           ],
         };
       } else {
-        // Can't uncheck base company
         if (companyId === prev.empresa_base_id) {
           return prev;
         }
@@ -140,7 +136,6 @@ const BudgetForm = () => {
       ...prev,
       itens: prev.itens.map((item) => {
         if (item.id === itemId) {
-          // Parse numeric values appropriately
           if (field === "quantidade") {
             return { ...item, [field]: parseInt(value as string) || 0 };
           } else if (field === "valor_unitario") {
@@ -163,7 +158,6 @@ const BudgetForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
     if (!formData.cliente || !formData.empresa_base_id) {
       toast.error("Por favor, preencha todos os campos obrigatórios");
       return;
@@ -182,6 +176,8 @@ const BudgetForm = () => {
     }
 
     try {
+      let budgetId = '';
+      
       if (isEditing && id) {
         const existingBudget = getBudgetById(id);
         if (!existingBudget) {
@@ -201,14 +197,10 @@ const BudgetForm = () => {
           ],
           itens: formData.itens,
         });
-
-        // Generate alternative budgets if we have alternative companies
-        if (formData.empresas_selecionadas_ids.length > 1) {
-          generateAlternativeBudgets(id);
-        }
-
+        
+        budgetId = id;
       } else {
-        const newBudgetId = addBudget({
+        budgetId = addBudget({
           cliente: formData.cliente,
           empresa_base_id: formData.empresa_base_id,
           empresas_selecionadas_ids: [
@@ -219,11 +211,11 @@ const BudgetForm = () => {
           ],
           itens: formData.itens,
         });
+      }
 
-        // Generate alternative budgets if we have alternative companies
-        if (formData.empresas_selecionadas_ids.length > 1) {
-          generateAlternativeBudgets(newBudgetId);
-        }
+      if (formData.empresas_selecionadas_ids.length > 1) {
+        toast.info("Gerando orçamentos alternativos...");
+        generateAlternativeBudgets(budgetId);
       }
 
       navigate("/orcamentos");
