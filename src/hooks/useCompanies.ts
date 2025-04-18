@@ -17,7 +17,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
     };
 
     const { error } = await supabase
-      .from('companies')
+      .from('companies' as any)
       .insert(newCompany as any);
 
     if (error) {
@@ -32,7 +32,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
 
   const updateCompany = useCallback(async (company: Company): Promise<void> => {
     const { error } = await supabase
-      .from('companies')
+      .from('companies' as any)
       .update(company as any)
       .eq('id', company.id);
 
@@ -47,7 +47,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
 
   const deleteCompany = useCallback(async (id: string): Promise<void> => {
     const { error } = await supabase
-      .from('companies')
+      .from('companies' as any)
       .delete()
       .eq('id', id);
 

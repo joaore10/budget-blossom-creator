@@ -176,7 +176,7 @@ const BudgetForm = () => {
     }
 
     try {
-      let budgetId = '';
+      let budgetId: string;
       
       if (isEditing && id) {
         const existingBudget = getBudgetById(id);
@@ -185,7 +185,7 @@ const BudgetForm = () => {
           return;
         }
 
-        updateBudget({
+        await updateBudget({
           ...existingBudget,
           cliente: formData.cliente,
           empresa_base_id: formData.empresa_base_id,
@@ -200,7 +200,7 @@ const BudgetForm = () => {
         
         budgetId = id;
       } else {
-        budgetId = addBudget({
+        budgetId = await addBudget({
           cliente: formData.cliente,
           empresa_base_id: formData.empresa_base_id,
           empresas_selecionadas_ids: [

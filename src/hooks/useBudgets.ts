@@ -26,7 +26,7 @@ export function useBudgets() {
     };
 
     const { error } = await supabase
-      .from('budgets')
+      .from('budgets' as any)
       .insert(newBudget as any);
 
     if (error) {
@@ -41,7 +41,7 @@ export function useBudgets() {
 
   const updateBudget = useCallback(async (budget: Budget): Promise<void> => {
     const { error } = await supabase
-      .from('budgets')
+      .from('budgets' as any)
       .update(budget as any)
       .eq('id', budget.id);
 
@@ -56,7 +56,7 @@ export function useBudgets() {
 
   const deleteBudget = useCallback(async (id: string): Promise<void> => {
     const { error } = await supabase
-      .from('budgets')
+      .from('budgets' as any)
       .delete()
       .eq('id', id);
 
@@ -128,7 +128,7 @@ export function useBudgets() {
 
     if (newAlternativeBudgets.length > 0) {
       const { error } = await supabase
-        .from('alternative_budgets')
+        .from('alternative_budgets' as any)
         .insert(newAlternativeBudgets as any);
 
       if (error) {

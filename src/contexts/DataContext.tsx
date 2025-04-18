@@ -40,7 +40,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       try {
         // Carregar empresas
         const { data: companiesData, error: companiesError } = await supabase
-          .from('companies')
+          .from('companies' as any)
           .select('*');
         
         if (companiesError) throw companiesError;
@@ -48,7 +48,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
         // Carregar orçamentos
         const { data: budgetsData, error: budgetsError } = await supabase
-          .from('budgets')
+          .from('budgets' as any)
           .select('*');
         
         if (budgetsError) throw budgetsError;
@@ -56,7 +56,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
         // Carregar orçamentos alternativos
         const { data: altBudgetsData, error: altBudgetsError } = await supabase
-          .from('alternative_budgets')
+          .from('alternative_budgets' as any)
           .select('*');
         
         if (altBudgetsError) throw altBudgetsError;
@@ -83,7 +83,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           console.log('Companies change received:', payload);
           // Recarregar empresas quando houver mudanças
           supabase
-            .from('companies')
+            .from('companies' as any)
             .select('*')
             .then(({ data }) => {
               if (data) setCompanies(data);
@@ -99,7 +99,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           console.log('Budgets change received:', payload);
           // Recarregar orçamentos quando houver mudanças
           supabase
-            .from('budgets')
+            .from('budgets' as any)
             .select('*')
             .then(({ data }) => {
               if (data) setBudgets(data);
