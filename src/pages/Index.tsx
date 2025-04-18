@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { seedInitialCompanies } from "@/utils/seedCompanies";
 import { toast } from "sonner";
+import { DashboardMetrics } from "@/components/DashboardMetrics";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ const Index = () => {
           </p>
         </div>
 
+        <DashboardMetrics />
+
         <div className="grid gap-4">
           <Button onClick={() => navigate("/empresas")}>
             Ver Empresas Cadastradas
@@ -46,3 +49,4 @@ const Index = () => {
 };
 
 export default Index;
+

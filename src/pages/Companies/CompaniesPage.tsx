@@ -5,7 +5,6 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus } from "lucide-react";
-import { DashboardMetrics } from "@/components/DashboardMetrics";
 
 const CompaniesPage = () => {
   const navigate = useNavigate();
@@ -21,8 +20,6 @@ const CompaniesPage = () => {
             Nova Empresa
           </Button>
         </div>
-
-        <DashboardMetrics />
 
         <div className="rounded-md border">
           <Table>
@@ -56,3 +53,4 @@ const CompaniesPage = () => {
 };
 
 export default CompaniesPage;
+
