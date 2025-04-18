@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Budget } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertTriangle, Edit, FileText, FilePlus, Trash2 } from "lucide-react";
+import { AlertTriangle, Edit, FileText, FilePlus, Eye, Trash2 } from "lucide-react";
 import BudgetStatus from "./BudgetStatus";
 
 interface BudgetTableProps {
@@ -22,6 +21,7 @@ interface BudgetTableProps {
   formatDate: (date: string) => string;
   formatCurrency: (value: number) => string;
   calculateTotal: (budget: Budget) => number;
+  onViewAlternativeBudgets?: (budgetId: string) => void;
 }
 
 const BudgetTable = ({
@@ -32,6 +32,7 @@ const BudgetTable = ({
   formatDate,
   formatCurrency,
   calculateTotal,
+  onViewAlternativeBudgets,
 }: BudgetTableProps) => {
   if (budgets.length === 0) {
     return (
@@ -89,6 +90,18 @@ const BudgetTable = ({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              
+              {onViewAlternativeBudgets && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => onViewAlternativeBudgets(budget.id)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"

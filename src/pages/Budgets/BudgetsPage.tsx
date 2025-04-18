@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useData } from "@/contexts/DataContext";
@@ -97,6 +96,10 @@ const BudgetsPage = () => {
     }
   };
 
+  const handleViewAlternativeBudgets = (budgetId: string) => {
+    setSelectedBudgetAlternatives(budgetId);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
@@ -156,6 +159,7 @@ const BudgetsPage = () => {
                     formatDate={formatDate}
                     formatCurrency={formatCurrency}
                     calculateTotal={calculateTotal}
+                    onViewAlternativeBudgets={handleViewAlternativeBudgets}
                   />
                 </TableBody>
               </Table>
