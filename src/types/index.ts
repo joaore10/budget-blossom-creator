@@ -1,4 +1,3 @@
-
 export interface Company {
   id: string;
   nome: string;
@@ -13,6 +12,7 @@ export interface BudgetItem {
   descricao: string;
   quantidade: number;
   valor_unitario: number;
+  observacao?: string;
 }
 
 export interface Budget {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -7,13 +6,12 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,12 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Save, FileText } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
 import { BudgetItem } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import { generatePDF } from "@/lib/pdf-generator";
+import { generatePDF } from "@/lib/pdf/document-generator";
 
 const BudgetForm = () => {
   const { id } = useParams();
@@ -120,6 +118,7 @@ const BudgetForm = () => {
       descricao: "",
       quantidade: 1,
       valor_unitario: 0,
+      observacao: "",
     };
 
     setFormData((prev) => ({
@@ -201,7 +200,6 @@ const BudgetForm = () => {
         
         budgetId = id;
         
-        // Gera os orçamentos alternativos imediatamente após atualização
         if (formData.empresas_selecionadas_ids.length > 1) {
           try {
             toast.info("Gerando orçamentos alternativos...");
@@ -212,7 +210,6 @@ const BudgetForm = () => {
           }
         }
       } else {
-        // Cria novo orçamento
         budgetId = addBudget({
           cliente: formData.cliente,
           empresa_base_id: formData.empresa_base_id,
@@ -225,7 +222,6 @@ const BudgetForm = () => {
           itens: formData.itens,
         });
         
-        // Gera os orçamentos alternativos imediatamente após criação
         if (formData.empresas_selecionadas_ids.length > 1) {
           try {
             toast.info("Gerando orçamentos alternativos...");
@@ -291,62 +287,50 @@ const BudgetForm = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6 px-4">
         <div className="flex items-center gap-4">
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={() => navigate("/orcamentos")}
+            className="hover:bg-gray-100"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-2xl font-medium text-gray-900">
               {isEditing ? "Editar Orçamento" : "Novo Orçamento"}
             </h1>
-            <p className="text-gray-500">
-              {isEditing
-                ? "Atualize os dados do orçamento"
-                : "Crie um novo orçamento no sistema"}
-            </p>
           </div>
-          {isEditing && (
-            <Button variant="outline" onClick={handleGeneratePDF}>
-              <FileText className="mr-2 h-4 w-4" />
-              Gerar PDF
-            </Button>
-          )}
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Dados Gerais</CardTitle>
-                <CardDescription>
-                  Informações básicas do orçamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-medium">Informações Básicas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="cliente">Cliente *</Label>
+                  <Label htmlFor="cliente">Cliente</Label>
                   <Input
                     id="cliente"
                     name="cliente"
                     value={formData.cliente}
                     onChange={handleChange}
                     placeholder="Nome do cliente"
+                    className="bg-gray-50 border-0"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="empresa_base_id">Empresa Base *</Label>
+                  <Label htmlFor="empresa_base_id">Empresa Base</Label>
                   <Select
                     value={formData.empresa_base_id}
                     onValueChange={handleBaseCompanyChange}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-gray-50 border-0">
                       <SelectValue placeholder="Selecione a empresa base" />
                     </SelectTrigger>
                     <SelectContent>
@@ -357,21 +341,18 @@ const BudgetForm = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    A empresa base define os preços originais do orçamento
-                  </p>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label>Empresas Adicionais</Label>
-                  <div className="border rounded-md p-3 space-y-2">
+              <div className="space-y-2">
+                <Label>Empresas Adicionais</Label>
+                <Card className="border border-gray-100">
+                  <CardContent className="grid gap-2 p-4 md:grid-cols-2">
                     {companies.map((company) => (
                       <div key={company.id} className="flex items-center space-x-2">
                         <Checkbox
                           id={`company-${company.id}`}
-                          checked={formData.empresas_selecionadas_ids.includes(
-                            company.id
-                          )}
+                          checked={formData.empresas_selecionadas_ids.includes(company.id)}
                           onCheckedChange={(checked) =>
                             handleCompanyCheckChange(company.id, checked === true)
                           }
@@ -379,152 +360,164 @@ const BudgetForm = () => {
                         />
                         <label
                           htmlFor={`company-${company.id}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          className="text-sm text-gray-600"
                         >
                           {company.nome}
                           {company.id === formData.empresa_base_id && " (Base)"}
                         </label>
                       </div>
                     ))}
-                    {companies.length <= 1 && (
-                      <p className="text-xs text-muted-foreground">
-                        Cadastre mais empresas para gerar orçamentos alternativos
-                      </p>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Selecione as empresas adicionais para gerar orçamentos alternativos
-                  </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-medium">Itens do Orçamento</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {formData.itens.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">Nenhum item adicionado ainda</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addItem}
+                    className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Adicionar Item
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Itens do Orçamento</CardTitle>
-                <CardDescription>
-                  Adicione os itens que compõem este orçamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {formData.itens.length === 0 ? (
-                  <div className="text-center py-6 border border-dashed rounded-md">
-                    <p className="text-muted-foreground">
-                      Nenhum item adicionado ainda
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-2"
-                      onClick={addItem}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Adicionar Item
-                    </Button>
-                  </div>
-                ) : (
-                  formData.itens.map((item, index) => (
-                    <div
+              ) : (
+                <div className="space-y-4">
+                  {formData.itens.map((item, index) => (
+                    <Card
                       key={item.id}
-                      className="border rounded-md p-3 space-y-3"
+                      className="border border-gray-100 shadow-none"
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">Item {index + 1}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`item-desc-${item.id}`}>
-                          Descrição
-                        </Label>
-                        <Input
-                          id={`item-desc-${item.id}`}
-                          value={item.descricao}
-                          onChange={(e) =>
-                            updateItem(item.id, "descricao", e.target.value)
-                          }
-                          placeholder="Descreva o item"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label htmlFor={`item-qty-${item.id}`}>
-                            Quantidade
-                          </Label>
-                          <Input
-                            id={`item-qty-${item.id}`}
-                            type="number"
-                            min="1"
-                            value={item.quantidade}
-                            onChange={(e) =>
-                              updateItem(item.id, "quantidade", e.target.value)
-                            }
-                          />
+                      <CardContent className="p-4 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-600">
+                            Item {index + 1}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeItem(item.id)}
+                            className="h-8 w-8 p-0 hover:bg-gray-100 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`item-unit-${item.id}`}>
-                            Valor Unitário
-                          </Label>
-                          <Input
-                            id={`item-unit-${item.id}`}
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.valor_unitario}
-                            onChange={(e) =>
-                              updateItem(
-                                item.id,
-                                "valor_unitario",
-                                e.target.value
-                              )
-                            }
-                          />
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor={`item-desc-${item.id}`}>Descrição</Label>
+                            <Input
+                              id={`item-desc-${item.id}`}
+                              value={item.descricao}
+                              onChange={(e) =>
+                                updateItem(item.id, "descricao", e.target.value)
+                              }
+                              placeholder="Nome do item"
+                              className="bg-gray-50 border-0"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`item-obs-${item.id}`}>
+                              Observações (opcional)
+                            </Label>
+                            <Textarea
+                              id={`item-obs-${item.id}`}
+                              value={item.observacao || ""}
+                              onChange={(e) =>
+                                updateItem(item.id, "observacao", e.target.value)
+                              }
+                              placeholder="Detalhes adicionais sobre o item"
+                              className="bg-gray-50 border-0 resize-none"
+                              rows={2}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`item-qty-${item.id}`}>Quantidade</Label>
+                            <Input
+                              id={`item-qty-${item.id}`}
+                              type="number"
+                              min="1"
+                              value={item.quantidade}
+                              onChange={(e) =>
+                                updateItem(item.id, "quantidade", e.target.value)
+                              }
+                              className="bg-gray-50 border-0"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`item-unit-${item.id}`}>
+                              Valor Unitário
+                            </Label>
+                            <Input
+                              id={`item-unit-${item.id}`}
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={item.valor_unitario}
+                              onChange={(e) =>
+                                updateItem(item.id, "valor_unitario", e.target.value)
+                              }
+                              className="bg-gray-50 border-0"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right text-sm">
-                        Total: {formatCurrency(calculateItemTotal(item))}
-                      </div>
+
+                        <div className="text-right">
+                          <span className="text-sm font-medium text-gray-900">
+                            Total: {formatCurrency(calculateItemTotal(item))}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addItem}
+                    className="w-full gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Adicionar Item
+                  </Button>
+
+                  {formData.itens.length > 0 && (
+                    <div className="text-right pt-4">
+                      <span className="text-lg font-medium text-gray-900">
+                        Total do Orçamento: {formatCurrency(calculateBudgetTotal())}
+                      </span>
                     </div>
-                  ))
-                )}
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={addItem}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Adicionar Item
-                </Button>
-
-                {formData.itens.length > 0 && (
-                  <div className="mt-4 text-right font-bold text-lg">
-                    Total do Orçamento:{" "}
-                    {formatCurrency(calculateBudgetTotal())}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="flex justify-end mt-6 space-x-2">
+          <div className="flex justify-end gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={() => navigate("/orcamentos")}
+              className="gap-2"
             >
               Cancelar
             </Button>
-            <Button type="submit">
-              <Save className="mr-2 h-4 w-4" />
+            <Button type="submit" className="gap-2">
+              <Save className="h-4 w-4" />
               Salvar Orçamento
             </Button>
           </div>
