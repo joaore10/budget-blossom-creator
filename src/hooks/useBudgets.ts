@@ -25,9 +25,9 @@ export function useBudgets() {
       ],
     };
 
-    const { error } = await (supabase
-      .from('budgets' as any)
-      .insert(newBudget) as any);
+    const { error } = await (supabase as any)
+      .from('budgets')
+      .insert(newBudget);
 
     if (error) {
       console.error('Erro ao adicionar orçamento:', error);
@@ -40,10 +40,10 @@ export function useBudgets() {
   }, []);
 
   const updateBudget = useCallback(async (budget: Budget): Promise<void> => {
-    const { error } = await (supabase
-      .from('budgets' as any)
+    const { error } = await (supabase as any)
+      .from('budgets')
       .update(budget)
-      .eq('id', budget.id) as any);
+      .eq('id', budget.id);
 
     if (error) {
       console.error('Erro ao atualizar orçamento:', error);
@@ -55,10 +55,10 @@ export function useBudgets() {
   }, []);
 
   const deleteBudget = useCallback(async (id: string): Promise<void> => {
-    const { error } = await (supabase
-      .from('budgets' as any)
+    const { error } = await (supabase as any)
+      .from('budgets')
       .delete()
-      .eq('id', id) as any);
+      .eq('id', id);
 
     if (error) {
       console.error('Erro ao excluir orçamento:', error);
@@ -127,9 +127,9 @@ export function useBudgets() {
     }
 
     if (newAlternativeBudgets.length > 0) {
-      const { error } = await (supabase
-        .from('alternative_budgets' as any)
-        .insert(newAlternativeBudgets) as any);
+      const { error } = await (supabase as any)
+        .from('alternative_budgets')
+        .insert(newAlternativeBudgets);
 
       if (error) {
         console.error('Erro ao gerar orçamentos alternativos:', error);
