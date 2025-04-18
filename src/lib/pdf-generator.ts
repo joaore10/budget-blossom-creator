@@ -1,15 +1,15 @@
 
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
 import { Budget, Company, AlternativeBudget } from "@/types";
+import puppeteer from 'puppeteer';
 import { pdfUtils } from "./pdf-utils";
 import { pdfTemplates } from "./pdf-templates";
 
-export const generatePDF = async (
+// Function to generate a preview HTML string without actually creating a PDF
+export const generatePreviewHTML = (
   budget: Budget,
   company: Company,
   alternativeBudget?: AlternativeBudget
-) => {
+): string => {
   try {
     // Use alternative items if available, otherwise use base items
     const items = alternativeBudget 
@@ -33,49 +33,107 @@ export const generatePDF = async (
       budget.data_criacao
     );
 
-    // Create temporary div
-    const div = document.createElement("div");
-    div.innerHTML = filledHtml;
-    div.style.position = "fixed";
-    div.style.left = "-9999px";
-    document.body.appendChild(div);
+    return filledHtml;
+  } catch (error) {
+    console.error("Error generating preview HTML:", error);
+    return "<div>Error generating preview</div>";
+  }
+};
 
-    // Generate PDF
+export const generatePDF = async (
+  budget: Budget,
+  company: Company,
+  alternativeBudget?: AlternativeBudget
+) => {
+  try {
+    const filledHtml = generatePreviewHTML(budget, company, alternativeBudget);
+    
+    // Add CSS for print optimization
+    const htmlWithPrintStyles = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          @page {
+            size: A4;
+            margin: 1cm;
+          }
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          table {
+            table-layout: fixed;
+            width: 100%;
+            page-break-inside: avoid;
+          }
+          tr {
+            page-break-inside: avoid;
+          }
+          @media print {
+            html, body {
+              width: 210mm;
+              height: 297mm;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${filledHtml}
+      </body>
+      </html>
+    `;
+    
+    // Launch puppeteer browser
+    const browser = await puppeteer.launch({
+      headless: "new",
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    
     try {
-      const canvas = await html2canvas(div);
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-
-      pdf.addImage(
-        imgData,
-        "PNG",
-        imgX,
-        imgY,
-        imgWidth * ratio,
-        imgHeight * ratio
-      );
-
+      const page = await browser.newPage();
+      
+      // Set content and wait for rendering
+      await page.setContent(htmlWithPrintStyles, { 
+        waitUntil: 'networkidle0' 
+      });
+      
       // Generate filename based on client and company
       const fileName = `orcamento_${budget.cliente.replace(/\s+/g, "_")}_${company.nome.replace(/\s+/g, "_")}.pdf`;
-      pdf.save(fileName);
-
+      
+      // Generate PDF with high quality settings
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+        margin: {
+          top: '1cm',
+          right: '1cm',
+          bottom: '1cm',
+          left: '1cm'
+        }
+      });
+      
+      // Convert buffer to blob and download
+      const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
       return true;
-    } catch (err) {
-      console.error("Error generating PDF:", err);
-      return false;
     } finally {
-      // Clean up DOM
-      if (div.parentNode) {
-        div.parentNode.removeChild(div);
-      }
+      // Always close the browser
+      await browser.close();
     }
   } catch (error) {
     console.error("Error in PDF generation:", error);
