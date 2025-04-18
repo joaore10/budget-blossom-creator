@@ -9,42 +9,45 @@ export const template2 = `
   <title>Orçamento</title>
   <style>
     ${commonStyles}
+    body {
+      background: url('https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=800&q=80') no-repeat top right;
+      background-size: 200px;
+      padding-top: 220px;
+    }
     .header {
-      background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+      background: #2C3E50;
       color: white;
       padding: 25px;
-      border-radius: 10px;
+      border-radius: 0;
       margin-bottom: 30px;
+      position: relative;
     }
-    .header h2 {
-      margin: 0;
-      font-size: 24px;
+    table {
+      border: 2px solid #2C3E50;
+      border-radius: 0;
+    }
+    th {
+      background: #2C3E50;
       color: white;
-      border: none;
     }
     .info-section {
-      background: #F8FAFC;
+      background: #ECF0F1;
       padding: 20px;
-      border-radius: 8px;
+      border-left: 4px solid #2C3E50;
       margin-bottom: 25px;
-      border: 1px solid #E2E8F0;
     }
     .total-section {
       text-align: right;
       padding: 20px;
-      background: #F8FAFC;
-      border-radius: 8px;
+      background: #2C3E50;
+      color: white;
       margin: 30px 0;
-      border: 1px solid #E2E8F0;
     }
-    .observations {
-      background: #F8FAFC;
-      padding: 20px;
-      border-radius: 8px;
-      margin: 30px 0;
-      font-size: 14px;
-      color: #4A5568;
-      border: 1px solid #E2E8F0;
+    .footer {
+      border-top: 4px solid #2C3E50;
+      margin-top: 50px;
+      padding-top: 20px;
+      text-align: center;
     }
   </style>
 </head>
@@ -63,9 +66,8 @@ export const template2 = `
   <table>
     <thead>
       <tr>
+        <th>Item</th>
         <th>Quantidade</th>
-        <th>Unidade</th>
-        <th>Descrição</th>
         <th>Valor Unitário</th>
         <th>Total</th>
       </tr>
@@ -76,16 +78,7 @@ export const template2 = `
   </table>
 
   <div class="total-section">
-    <strong>Valor Total: R$ {{VALOR_TOTAL}}</strong>
-  </div>
-
-  <div class="observations">
-    <p><strong>Observações:</strong></p>
-    <ul>
-      <li>Este orçamento tem validade de 15 dias a partir da data de emissão.</li>
-      <li>Valores sujeitos a alteração sem aviso prévio.</li>
-      <li>Prazo de entrega a combinar após aprovação do orçamento.</li>
-    </ul>
+    <strong>Valor Total:</strong> R$ {{VALOR_TOTAL}}
   </div>
 
   <div class="footer">
@@ -98,4 +91,3 @@ export const template2 = `
 </body>
 </html>
 `;
-

@@ -10,94 +10,105 @@ export const template3 = `
   <style>
     ${commonStyles}
     .container {
-      max-width: 1000px;
-      margin: 0 auto;
+      background: url('https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?auto=format&fit=crop&w=800&q=80') no-repeat bottom right;
+      background-size: 300px;
+      padding: 20px;
+      position: relative;
     }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 25px;
-      background: #8B5CF6;
+      background: #FF6B6B;
       color: white;
-      border-radius: 10px;
-      margin-bottom: 30px;
+      border-radius: 10px 10px 0 0;
+      margin-bottom: 0;
     }
     .header h2 {
       margin: 0;
-      font-size: 28px;
       color: white;
       border: none;
     }
-    .validity {
-      background: #F6F6F7;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 20px 0;
-      font-size: 14px;
-      color: #666;
-      text-align: center;
+    .content {
+      background: white;
+      padding: 30px;
+      border: 2px solid #FF6B6B;
+      border-radius: 0 0 10px 10px;
+    }
+    table {
+      box-shadow: none;
+      border: 2px solid #FF6B6B;
+    }
+    th {
+      background: #FF6B6B;
+    }
+    .total-value {
+      background: #FF6B6B;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: right;
+      font-size: 24px;
+      margin: 30px 0;
     }
     .footer {
       margin-top: 50px;
-      padding-top: 30px;
-      border-top: 2px solid #E5DEFF;
+      padding: 30px;
+      border-top: 4px solid #FF6B6B;
       text-align: center;
+      background: white;
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-left">
-        <h2>ORÇAMENTO</h2>
-      </div>
-      <div class="header-right">
+      <h2>ORÇAMENTO</h2>
+      <div>
         <p>Nº {{NUMERO}}</p>
         <p>{{DATA}}</p>
       </div>
     </div>
 
-    <div class="client-details">
-      <h3>Dados do Cliente</h3>
-      <p><strong>Nome:</strong> {{NOME_CLIENTE}}</p>
-      <p><strong>Empresa:</strong> {{NOME_EMPRESA}}</p>
-    </div>
+    <div class="content">
+      <div class="client-details">
+        <h3>Dados do Cliente</h3>
+        <p><strong>Nome:</strong> {{NOME_CLIENTE}}</p>
+        <p><strong>Empresa:</strong> {{NOME_EMPRESA}}</p>
+      </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Descrição</th>
-          <th>Quantidade</th>
-          <th>Valor Unitário</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{ITENS}}
-      </tbody>
-    </table>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Descrição</th>
+            <th>Quantidade</th>
+            <th>Valor Unitário</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ITENS}}
+        </tbody>
+      </table>
 
-    <div class="total-section">
-      <span>Valor Total: R$ {{VALOR_TOTAL}}</span>
-    </div>
+      <div class="total-value">
+        <strong>Valor Total:</strong> R$ {{VALOR_TOTAL}}
+      </div>
 
-    <div class="validity">
-      Este orçamento é válido por 15 dias corridos a partir da data de emissão.
-    </div>
-
-    <div class="footer">
-      <p>{{CIDADE}}, {{DATA}}</p>
-      <div class="signature-area">
-        <div class="signature-line"></div>
-        <p><strong>{{REPRESENTANTE}}</strong></p>
-        <p>{{NOME_EMPRESA}}</p>
-        <p>CNPJ: {{CNPJ_EMPRESA}}</p>
+      <div class="footer">
+        <p>{{CIDADE}}, {{DATA}}</p>
+        <div class="signature-area">
+          <p>_______________________________________________</p>
+          <p><strong>{{REPRESENTANTE}}</strong></p>
+          <p>{{NOME_EMPRESA}}</p>
+          <p>CNPJ: {{CNPJ_EMPRESA}}</p>
+        </div>
       </div>
     </div>
   </div>
 </body>
 </html>
 `;
-

@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AlternativeBudget, Budget, BudgetItem, Company } from "@/types";
-import { defaultPdfTemplate } from "@/lib/pdf-templates";
+import { defaultPdfTemplate, pdfTemplates } from "@/lib/pdf-templates";
 import { toast } from "sonner";
 
 interface DataContextType {
@@ -38,7 +38,7 @@ const initialCompanies: Company[] = [
     cnpj: "58.188.536/0001-62",
     representante: "Maria Beatriz Pereira Alves",
     endereco: "Ourinhos, SP",
-    modelo_pdf: defaultPdfTemplate.html,
+    modelo_pdf: pdfTemplates.template1,
   },
   {
     id: uuidv4(),
@@ -46,7 +46,7 @@ const initialCompanies: Company[] = [
     cnpj: "52.928.895/0001-22",
     representante: "Laura dos Santos Sakai",
     endereco: "Campinas, SP",
-    modelo_pdf: defaultPdfTemplate.html,
+    modelo_pdf: pdfTemplates.template2,
   },
   {
     id: uuidv4(),
@@ -54,7 +54,7 @@ const initialCompanies: Company[] = [
     cnpj: "52.019.295/0001-41",
     representante: "Daniele Fabricia dos Santos",
     endereco: "São Paulo, SP",
-    modelo_pdf: defaultPdfTemplate.html,
+    modelo_pdf: pdfTemplates.template3,
   },
 ];
 
