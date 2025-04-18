@@ -6,16 +6,20 @@ import { toast } from 'sonner';
 
 export function useCompanies(initialCompanies: Company[] = []) {
   const [companies, setCompanies] = useState<Company[]>(initialCompanies);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Carrega as empresas ao iniciar
   useEffect(() => {
-    const loadCompanies = () => {
+    const loadCompanies = async () => {
+      setIsLoading(true);
       try {
-        const companiesData = dbService.getAllCompanies();
+        const companiesData = await dbService.getAllCompanies();
         setCompanies(companiesData);
       } catch (error) {
         console.error('Erro ao carregar empresas:', error);
         toast.error('Erro ao carregar empresas');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -26,7 +30,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
     company: Omit<Company, "id"> & { modelo_pdf?: string }
   ): Promise<string> => {
     try {
-      const id = dbService.createCompany(company);
+      const id = await dbService.createCompany(company);
       const newCompany = { ...company, id, modelo_pdf: company.modelo_pdf || "" };
       setCompanies(prev => [...prev, newCompany as Company]);
       toast.success('Empresa adicionada com sucesso');
@@ -40,7 +44,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
 
   const updateCompany = useCallback(async (company: Company): Promise<void> => {
     try {
-      dbService.updateCompany(company);
+      await dbService.updateCompany(company);
       setCompanies(prev => 
         prev.map(c => c.id === company.id ? company : c)
       );
@@ -54,7 +58,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
 
   const deleteCompany = useCallback(async (id: string): Promise<void> => {
     try {
-      dbService.deleteCompany(id);
+      await dbService.deleteCompany(id);
       setCompanies(prev => prev.filter(c => c.id !== id));
       toast.success('Empresa excluída com sucesso');
     } catch (error) {
@@ -70,6 +74,7 @@ export function useCompanies(initialCompanies: Company[] = []) {
 
   return {
     companies,
+    isLoading,
     setCompanies,
     addCompany,
     updateCompany,

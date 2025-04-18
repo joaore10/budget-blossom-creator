@@ -7,16 +7,20 @@ import { toast } from 'sonner';
 export function useBudgets() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [alternativeBudgets, setAlternativeBudgets] = useState<AlternativeBudget[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Carrega os orçamentos ao iniciar
   useEffect(() => {
-    const loadBudgets = () => {
+    const loadBudgets = async () => {
+      setIsLoading(true);
       try {
-        const budgetsData = dbService.getAllBudgets();
+        const budgetsData = await dbService.getAllBudgets();
         setBudgets(budgetsData);
       } catch (error) {
         console.error('Erro ao carregar orçamentos:', error);
         toast.error('Erro ao carregar orçamentos');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -31,7 +35,6 @@ export function useBudgets() {
     try {
       const newBudget = {
         ...budget,
-        data_criacao: new Date().toISOString(),
         empresas_selecionadas_ids: [
           budget.empresa_base_id,
           ...budget.empresas_selecionadas_ids.filter(
@@ -40,8 +43,8 @@ export function useBudgets() {
         ],
       };
 
-      const id = dbService.createBudget(newBudget);
-      setBudgets(prev => [...prev, { ...newBudget, id }]);
+      const id = await dbService.createBudget(newBudget);
+      setBudgets(prev => [...prev, { ...newBudget, id, data_criacao: new Date().toISOString() }]);
       toast.success('Orçamento criado com sucesso');
       return id;
     } catch (error) {
@@ -53,7 +56,7 @@ export function useBudgets() {
 
   const updateBudget = useCallback(async (budget: Budget): Promise<void> => {
     try {
-      dbService.updateBudget(budget);
+      await dbService.updateBudget(budget);
       setBudgets(prev => 
         prev.map(b => b.id === budget.id ? budget : b)
       );
@@ -67,7 +70,7 @@ export function useBudgets() {
 
   const deleteBudget = useCallback(async (id: string): Promise<void> => {
     try {
-      dbService.deleteBudget(id);
+      await dbService.deleteBudget(id);
       setBudgets(prev => prev.filter(b => b.id !== id));
       setAlternativeBudgets(prev => 
         prev.filter(ab => ab.orcamento_id !== id)
@@ -84,17 +87,29 @@ export function useBudgets() {
     return budgets.find((b) => b.id === id);
   }, [budgets]);
 
-  const getAlternativeBudgetsByBudgetId = useCallback((budgetId: string): AlternativeBudget[] => {
-    return alternativeBudgets.filter((ab) => ab.orcamento_id === budgetId);
-  }, [alternativeBudgets]);
+  const getAlternativeBudgetsByBudgetId = useCallback(async (budgetId: string): Promise<AlternativeBudget[]> => {
+    try {
+      const altBudgets = await dbService.getAlternativeBudgets(budgetId);
+      return altBudgets;
+    } catch (error) {
+      console.error('Erro ao buscar orçamentos alternativos:', error);
+      toast.error('Erro ao buscar orçamentos alternativos');
+      return [];
+    }
+  }, []);
 
   const getAlternativeBudgetByCompanyAndBudget = useCallback(
-    (budgetId: string, companyId: string): AlternativeBudget | undefined => {
-      return alternativeBudgets.find(
-        (ab) => ab.orcamento_id === budgetId && ab.empresa_id === companyId
-      );
+    async (budgetId: string, companyId: string): Promise<AlternativeBudget | undefined> => {
+      try {
+        const altBudgets = await dbService.getAlternativeBudgets(budgetId);
+        return altBudgets.find(ab => ab.empresa_id === companyId);
+      } catch (error) {
+        console.error('Erro ao buscar orçamento alternativo:', error);
+        toast.error('Erro ao buscar orçamento alternativo');
+        return undefined;
+      }
     },
-    [alternativeBudgets]
+    []
   );
 
   const generateAlternativeBudgets = useCallback(async (budgetId: string): Promise<string[]> => {
@@ -130,12 +145,12 @@ export function useBudgets() {
           itens_com_valores_alterados: alternativeItems,
         };
 
-        const id = dbService.createAlternativeBudget(newAltBudget);
+        const id = await dbService.createAlternativeBudget(newAltBudget);
         newIds.push(id);
       }
 
       // Atualiza a lista de orçamentos alternativos
-      const updatedAlternatives = dbService.getAlternativeBudgets(budgetId);
+      const updatedAlternatives = await dbService.getAlternativeBudgets(budgetId);
       setAlternativeBudgets(prev => [
         ...prev.filter(ab => ab.orcamento_id !== budgetId),
         ...updatedAlternatives
@@ -157,6 +172,7 @@ export function useBudgets() {
 
   return {
     budgets,
+    isLoading,
     setBudgets,
     alternativeBudgets,
     setAlternativeBudgets,
