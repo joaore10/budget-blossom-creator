@@ -14,8 +14,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
-import { defaultPdfTemplate } from "@/lib/pdf-templates";
+import { pdfTemplates } from "@/lib/pdf-templates";
 import { toast } from "sonner";
 
 const CompanyForm = () => {
@@ -31,6 +38,8 @@ const CompanyForm = () => {
     modelo_pdf: defaultPdfTemplate.html,
   });
 
+  const [selectedTemplate, setSelectedTemplate] = useState("template1");
+
   const isEditing = !!id;
 
   useEffect(() => {
@@ -44,6 +53,12 @@ const CompanyForm = () => {
           endereco: company.endereco,
           modelo_pdf: company.modelo_pdf,
         });
+        
+        Object.entries(pdfTemplates).forEach(([key, template]) => {
+          if (company.modelo_pdf === template) {
+            setSelectedTemplate(key);
+          }
+        });
       } else {
         toast.error("Empresa não encontrada");
         navigate("/empresas");
@@ -56,6 +71,14 @@ const CompanyForm = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTemplateChange = (templateKey: string) => {
+    setSelectedTemplate(templateKey);
+    setFormData(prev => ({
+      ...prev,
+      modelo_pdf: pdfTemplates[templateKey as keyof typeof pdfTemplates]
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -169,15 +192,21 @@ const CompanyForm = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="modelo_pdf">Modelo de PDF HTML</Label>
-                  <Button
-                    type="button"
-                    variant="link"
-                    size="sm"
-                    className="h-auto p-0 text-xs"
-                    onClick={resetToDefaultTemplate}
-                  >
-                    Restaurar Modelo Padrão
-                  </Button>
+                  <div className="flex gap-2">
+                    <Select
+                      value={selectedTemplate}
+                      onValueChange={handleTemplateChange}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Selecione um modelo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="template1">Modelo 1</SelectItem>
+                        <SelectItem value="template2">Modelo 2</SelectItem>
+                        <SelectItem value="template3">Modelo 3</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <Textarea
                   id="modelo_pdf"
@@ -188,8 +217,7 @@ const CompanyForm = () => {
                   className="font-mono text-xs min-h-[300px]"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Use marcadores como {"{"}{"{"}"NOME_EMPRESA"{"}"}{"}"}, {"{"}{"{"}"CNPJ_EMPRESA"{"}"}{"}"}, etc.
-                  para inserir dados dinâmicos no PDF.
+                  Use marcadores como "{{"{{"}}NOME_EMPRESA{"}"}}", "{{"{{"}}CNPJ_EMPRESA{"}"}}", etc.
                 </p>
               </div>
             </CardContent>

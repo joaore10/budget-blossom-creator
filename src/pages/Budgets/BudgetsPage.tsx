@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -51,7 +50,6 @@ const BudgetsPage = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
-    // Sort and filter budgets
     let sorted = [...budgets].sort((a, b) => {
       const dateA = new Date(a.data_criacao).getTime();
       const dateB = new Date(b.data_criacao).getTime();
@@ -97,13 +95,20 @@ const BudgetsPage = () => {
 
     toast.info("Gerando PDFs...");
     
-    // Generate PDFs for all companies in the budget
     try {
-      // Make sure we have alternative budgets generated
-      await generateAlternativeBudgets(budget.id);
-
-      // Generate PDF for the base company
+      const alternativeBudgetIds = await generateAlternativeBudgets(budget.id);
+      
       await generatePDF(budget, company);
+
+      for (const altBudgetId of alternativeBudgetIds) {
+        const altBudget = alternativeBudgets.find(ab => ab.id === altBudgetId);
+        if (altBudget) {
+          const altCompany = getCompanyById(altBudget.empresa_id);
+          if (altCompany) {
+            await generatePDF(budget, altCompany, altBudget);
+          }
+        }
+      }
 
       toast.success("PDFs gerados com sucesso");
     } catch (error) {
