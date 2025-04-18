@@ -25,7 +25,7 @@ import { useState } from "react";
 interface AlternativeBudgetsDialogProps {
   selectedBudgetAlternatives: string | null;
   onClose: () => void;
-  getAlternativeBudgetsByBudgetId: (budgetId: string) => AlternativeBudget[];
+  getAlternativeBudgetsByBudgetId: () => Promise<AlternativeBudget[]>;
   getCompanyById: (id: string) => Company | undefined;
   budgets: Budget[];
   formatCurrency: (value: number) => string;
@@ -125,54 +125,56 @@ const AlternativeBudgetsDialog = ({
                 </TableRow>
 
                 {/* Alternative Budgets Rows */}
-                {getAlternativeBudgetsByBudgetId(selectedBudgetAlternatives).map((altBudget) => {
-                  const altCompany = getCompanyById(altBudget.empresa_id);
-                  
-                  if (!altCompany) return null;
-                  
-                  return (
-                    <TableRow key={altBudget.id}>
-                      <TableCell>{altCompany.nome}</TableCell>
-                      <TableCell>Alternativo</TableCell>
-                      <TableCell>
-                        {formatCurrency(calculateTotal(altBudget))}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Sheet>
-                            <SheetTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handlePreview(baseBudget, altCompany, altBudget)}
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Visualizar
-                              </Button>
-                            </SheetTrigger>
-                            <SheetContent className="sm:max-w-[1100px]">
-                              <SheetHeader>
-                                <SheetTitle>Prévia do Orçamento</SheetTitle>
-                              </SheetHeader>
-                              <div 
-                                className="mt-4 overflow-auto max-h-[calc(100vh-100px)] pdf-preview-container"
-                                dangerouslySetInnerHTML={{ __html: previewHtml }}
-                              />
-                            </SheetContent>
-                          </Sheet>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onGeneratePDF(baseBudget, altCompany, altBudget, true)}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Baixar
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {getAlternativeBudgetsByBudgetId().then(alternatives => 
+                  alternatives.map((altBudget) => {
+                    const altCompany = getCompanyById(altBudget.empresa_id);
+                    
+                    if (!altCompany) return null;
+                    
+                    return (
+                      <TableRow key={altBudget.id}>
+                        <TableCell>{altCompany.nome}</TableCell>
+                        <TableCell>Alternativo</TableCell>
+                        <TableCell>
+                          {formatCurrency(calculateTotal(altBudget))}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Sheet>
+                              <SheetTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handlePreview(baseBudget, altCompany, altBudget)}
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Visualizar
+                                </Button>
+                              </SheetTrigger>
+                              <SheetContent className="sm:max-w-[1100px]">
+                                <SheetHeader>
+                                  <SheetTitle>Prévia do Orçamento</SheetTitle>
+                                </SheetHeader>
+                                <div 
+                                  className="mt-4 overflow-auto max-h-[calc(100vh-100px)] pdf-preview-container"
+                                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+                                />
+                              </SheetContent>
+                            </Sheet>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onGeneratePDF(baseBudget, altCompany, altBudget, true)}
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Baixar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
           </div>

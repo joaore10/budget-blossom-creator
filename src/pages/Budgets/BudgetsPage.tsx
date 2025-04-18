@@ -192,15 +192,17 @@ const BudgetsPage = () => {
         onConfirm={confirmDelete}
       />
 
-      <AlternativeBudgetsDialog
-        selectedBudgetAlternatives={selectedBudgetAlternatives}
-        onClose={() => setSelectedBudgetAlternatives(null)}
-        getAlternativeBudgetsByBudgetId={() => Promise.resolve(localAlternativeBudgets)}
-        getCompanyById={getCompanyById}
-        budgets={budgets}
-        formatCurrency={formatCurrency}
-        onGeneratePDF={generatePDF}
-      />
+      {selectedBudgetAlternatives && (
+        <AlternativeBudgetsDialog
+          selectedBudgetAlternatives={selectedBudgetAlternatives}
+          onClose={() => setSelectedBudgetAlternatives(null)}
+          getAlternativeBudgetsByBudgetId={() => Promise.resolve(localAlternativeBudgets)}
+          getCompanyById={getCompanyById}
+          budgets={budgets}
+          formatCurrency={formatCurrency}
+          onGeneratePDF={generatePDF}
+        />
+      )}
     </Layout>
   );
 };
