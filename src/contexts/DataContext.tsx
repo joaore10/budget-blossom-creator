@@ -161,7 +161,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ],
     };
 
-    setBudgets((prev) => [...prev, newBudget]);
+    setBudgets((prev) => {
+      const updatedBudgets = [...prev, newBudget];
+      // Importante: salvamos logo para localStorage para garantir consistência
+      try {
+        localStorage.setItem("budgets", JSON.stringify(updatedBudgets));
+      } catch (error) {
+        console.error("Error saving budgets to localStorage:", error);
+      }
+      return updatedBudgets;
+    });
+    
     toast.success("Orçamento criado com sucesso");
     return id;
   };
@@ -172,10 +182,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
       prev.filter((ab) => ab.orcamento_id !== budget.id)
     );
 
-    setBudgets((prev) =>
-      prev.map((b) => (b.id === budget.id ? budget : b))
-    );
+    setBudgets((prev) => {
+      const updatedBudgets = prev.map((b) => (b.id === budget.id ? budget : b));
+      // Importante: salvamos logo para localStorage para garantir consistência
+      try {
+        localStorage.setItem("budgets", JSON.stringify(updatedBudgets));
+      } catch (error) {
+        console.error("Error saving budgets to localStorage:", error);
+      }
+      return updatedBudgets;
+    });
+    
     toast.success("Orçamento atualizado com sucesso");
+    return budget;
   };
 
   const deleteBudget = (id: string) => {
@@ -228,12 +247,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     console.log("Other company IDs:", otherCompanyIds);
 
     // Clear any existing alternative budgets for this budget
-    setAlternativeBudgets((prev) =>
-      prev.filter((ab) => ab.orcamento_id !== budgetId)
-    );
+    setAlternativeBudgets((prev) => {
+      const filteredBudgets = prev.filter((ab) => ab.orcamento_id !== budgetId);
+      return filteredBudgets;
+    });
 
     // Generate new alternative budgets
     const newAlternativeBudgetIds: string[] = [];
+
+    const newAlternativeBudgets: AlternativeBudget[] = [];
 
     otherCompanyIds.forEach((companyId) => {
       const altBudgetId = uuidv4();
@@ -259,8 +281,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
         itens_com_valores_alterados: alternativeItems,
       };
 
-      setAlternativeBudgets((prev) => [...prev, newAltBudget]);
-      console.log("Added alternative budget:", newAltBudget);
+      newAlternativeBudgets.push(newAltBudget);
+      console.log("Created alternative budget:", newAltBudget);
+    });
+
+    // Atualizamos o estado em uma única operação
+    setAlternativeBudgets((prev) => {
+      const updatedAlternativeBudgets = [...prev, ...newAlternativeBudgets];
+      // Salvamos imediatamente no localStorage
+      try {
+        localStorage.setItem("alternativeBudgets", JSON.stringify(updatedAlternativeBudgets));
+      } catch (error) {
+        console.error("Error saving alternative budgets to localStorage:", error);
+      }
+      return updatedAlternativeBudgets;
     });
 
     if (newAlternativeBudgetIds.length > 0) {

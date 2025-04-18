@@ -186,7 +186,7 @@ const BudgetForm = () => {
           return;
         }
 
-        updateBudget({
+        const updatedBudget = updateBudget({
           ...existingBudget,
           cliente: formData.cliente,
           empresa_base_id: formData.empresa_base_id,
@@ -200,7 +200,19 @@ const BudgetForm = () => {
         });
         
         budgetId = id;
+        
+        // Gera os orçamentos alternativos imediatamente após atualização
+        if (formData.empresas_selecionadas_ids.length > 1) {
+          try {
+            toast.info("Gerando orçamentos alternativos...");
+            generateAlternativeBudgets(budgetId);
+          } catch (error) {
+            console.error("Error generating alternative budgets:", error);
+            toast.error("Erro ao gerar orçamentos alternativos");
+          }
+        }
       } else {
+        // Cria novo orçamento
         budgetId = addBudget({
           cliente: formData.cliente,
           empresa_base_id: formData.empresa_base_id,
@@ -212,23 +224,17 @@ const BudgetForm = () => {
           ],
           itens: formData.itens,
         });
-      }
-
-      console.log("Budget ID after save:", budgetId);
-      console.log("Selected companies:", formData.empresas_selecionadas_ids);
-
-      // Only generate alternative budgets if there are additional companies selected
-      if (formData.empresas_selecionadas_ids.length > 1) {
-        console.log("Generating alternative budgets for ID:", budgetId);
-        // Wait a moment to ensure the budget is saved in state
-        setTimeout(() => {
+        
+        // Gera os orçamentos alternativos imediatamente após criação
+        if (formData.empresas_selecionadas_ids.length > 1) {
           try {
+            toast.info("Gerando orçamentos alternativos...");
             generateAlternativeBudgets(budgetId);
           } catch (error) {
             console.error("Error generating alternative budgets:", error);
             toast.error("Erro ao gerar orçamentos alternativos");
           }
-        }, 100);
+        }
       }
 
       navigate("/orcamentos");
