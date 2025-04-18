@@ -85,9 +85,9 @@ export const generatePDF = async (
       </html>
     `;
     
-    // Launch puppeteer browser
+    // Launch puppeteer browser - fixed headless option to use true instead of "new"
     const browser = await puppeteer.launch({
-      headless: "new",
+      headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     
