@@ -16,9 +16,9 @@ export function useCompanies(initialCompanies: Company[] = []) {
       modelo_pdf: company.modelo_pdf || undefined
     };
 
-    const { error } = await supabase
+    const { error } = await (supabase
       .from('companies' as any)
-      .insert(newCompany as any);
+      .insert(newCompany) as any);
 
     if (error) {
       console.error('Erro ao adicionar empresa:', error);
@@ -31,10 +31,10 @@ export function useCompanies(initialCompanies: Company[] = []) {
   }, []);
 
   const updateCompany = useCallback(async (company: Company): Promise<void> => {
-    const { error } = await supabase
+    const { error } = await (supabase
       .from('companies' as any)
-      .update(company as any)
-      .eq('id', company.id);
+      .update(company)
+      .eq('id', company.id) as any);
 
     if (error) {
       console.error('Erro ao atualizar empresa:', error);
@@ -46,10 +46,10 @@ export function useCompanies(initialCompanies: Company[] = []) {
   }, []);
 
   const deleteCompany = useCallback(async (id: string): Promise<void> => {
-    const { error } = await supabase
+    const { error } = await (supabase
       .from('companies' as any)
       .delete()
-      .eq('id', id);
+      .eq('id', id) as any);
 
     if (error) {
       console.error('Erro ao excluir empresa:', error);

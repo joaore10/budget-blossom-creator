@@ -39,25 +39,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const loadInitialData = async () => {
       try {
         // Carregar empresas
-        const { data: companiesData, error: companiesError } = await supabase
+        const { data: companiesData, error: companiesError } = await (supabase
           .from('companies' as any)
-          .select('*');
+          .select('*') as any);
         
         if (companiesError) throw companiesError;
         setCompanies(companiesData || []);
 
         // Carregar orçamentos
-        const { data: budgetsData, error: budgetsError } = await supabase
+        const { data: budgetsData, error: budgetsError } = await (supabase
           .from('budgets' as any)
-          .select('*');
+          .select('*') as any);
         
         if (budgetsError) throw budgetsError;
         setBudgets(budgetsData || []);
 
         // Carregar orçamentos alternativos
-        const { data: altBudgetsData, error: altBudgetsError } = await supabase
+        const { data: altBudgetsData, error: altBudgetsError } = await (supabase
           .from('alternative_budgets' as any)
-          .select('*');
+          .select('*') as any);
         
         if (altBudgetsError) throw altBudgetsError;
         setAlternativeBudgets(altBudgetsData || []);
@@ -82,9 +82,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         (payload) => {
           console.log('Companies change received:', payload);
           // Recarregar empresas quando houver mudanças
-          supabase
+          (supabase
             .from('companies' as any)
-            .select('*')
+            .select('*') as any)
             .then(({ data }) => {
               if (data) setCompanies(data);
             });
@@ -98,9 +98,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         (payload) => {
           console.log('Budgets change received:', payload);
           // Recarregar orçamentos quando houver mudanças
-          supabase
+          (supabase
             .from('budgets' as any)
-            .select('*')
+            .select('*') as any)
             .then(({ data }) => {
               if (data) setBudgets(data);
             });
