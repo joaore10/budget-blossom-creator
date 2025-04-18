@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useData } from "@/contexts/DataContext";
@@ -15,6 +16,8 @@ import AlternativeBudgetsDialog from "./components/AlternativeBudgetsDialog";
 const BudgetsPage = () => {
   const {
     budgets,
+    alternativeBudgets,
+    setAlternativeBudgets,
     deleteBudget,
     getCompanyById,
     generateAlternativeBudgets,
@@ -72,31 +75,37 @@ const BudgetsPage = () => {
       return;
     }
 
-    toast.info("Gerando PDFs...");
+    toast.info("Gerando PDFs e orçamentos alternativos...");
     
     try {
+      // Gerar orçamentos alternativos
       const alternativeBudgetIds = await generateAlternativeBudgets(budget.id);
       
-      await generatePDF(budget, company);
-
-      for (const altBudgetId of alternativeBudgetIds) {
-        const altBudget = getAlternativeBudgetsByBudgetId(budget.id).find(ab => ab.id === altBudgetId);
-        if (altBudget) {
-          const altCompany = getCompanyById(altBudget.empresa_id);
-          if (altCompany) {
-            await generatePDF(budget, altCompany, altBudget);
-          }
-        }
+      // Notificar usuário que os orçamentos alternativos foram gerados
+      if (alternativeBudgetIds.length > 0) {
+        toast.success(`${alternativeBudgetIds.length} orçamentos alternativos gerados`);
+        
+        // Atualizar o estado local para mostrar os orçamentos alternativos
+        setSelectedBudgetAlternatives(budget.id);
       }
-
-      toast.success("PDFs gerados com sucesso");
+      
+      // Gerar PDF do orçamento base
+      await generatePDF(budget, company);
+      toast.success("PDF do orçamento base gerado com sucesso");
     } catch (error) {
       console.error("Error generating PDFs:", error);
-      toast.error("Erro ao gerar PDFs");
+      toast.error("Erro ao gerar PDFs e orçamentos alternativos");
     }
   };
 
   const handleViewAlternativeBudgets = (budgetId: string) => {
+    // Verificar se há orçamentos alternativos para esse budget
+    const alternatives = getAlternativeBudgetsByBudgetId(budgetId);
+    if (alternatives.length === 0) {
+      toast.info("Não há orçamentos alternativos para este orçamento. Clique em 'Gerar PDFs' primeiro.");
+      return;
+    }
+    
     setSelectedBudgetAlternatives(budgetId);
   };
 

@@ -107,11 +107,32 @@ export function DataProvider({ children }: { children: ReactNode }) {
       })
       .subscribe();
 
+    // Adicionar listener para orçamentos alternativos
+    const altBudgetsChannel = supabase
+      .channel('alt-budgets-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'alternative_budgets' },
+        (payload) => {
+          console.log('Alternative budgets change received:', payload);
+          // Recarregar orçamentos alternativos quando houver mudanças
+          (supabase as any)
+            .from('alternative_budgets')
+            .select('*')
+            .then(({ data }) => {
+              if (data) {
+                console.log("Atualizando orçamentos alternativos:", data);
+                setAlternativeBudgets(data);
+              }
+            });
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(companiesChannel);
       supabase.removeChannel(budgetsChannel);
+      supabase.removeChannel(altBudgetsChannel);
     };
-  }, [setCompanies, setBudgets]);
+  }, [setCompanies, setBudgets, setAlternativeBudgets]);
 
   if (loading) {
     return <div>Carregando...</div>;
