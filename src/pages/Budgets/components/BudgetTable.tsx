@@ -2,15 +2,10 @@ import { Link } from "react-router-dom";
 import { Budget } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertTriangle, Edit, FileText, FilePlus, Eye, Trash2 } from "lucide-react";
+import { Edit, FileText, Eye, Trash2 } from "lucide-react";
 import BudgetStatus from "./BudgetStatus";
 
 interface BudgetTableProps {
@@ -71,25 +66,14 @@ const BudgetTable = ({
           </TableCell>
           <TableCell>
             <div className="flex space-x-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                  >
-                    <FileText className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => onGeneratePDFs(budget)}
-                  >
-                    <FilePlus className="h-4 w-4 mr-2" />
-                    Gerar PDFs
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => onGeneratePDFs(budget)}
+              >
+                <FileText className="h-4 w-4" />
+              </Button>
               
               {onViewAlternativeBudgets && (
                 <Button
@@ -112,6 +96,7 @@ const BudgetTable = ({
                   <Edit className="h-4 w-4" />
                 </Link>
               </Button>
+
               <Button
                 variant="outline"
                 size="sm"

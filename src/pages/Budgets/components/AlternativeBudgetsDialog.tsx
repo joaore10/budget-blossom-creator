@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Download, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Company, Budget, AlternativeBudget } from "@/types";
 
 interface AlternativeBudgetsDialogProps {
@@ -26,7 +26,7 @@ interface AlternativeBudgetsDialogProps {
   getCompanyById: (id: string) => Company | undefined;
   budgets: Budget[];
   formatCurrency: (value: number) => string;
-  onGeneratePDF: (budget: Budget, company: Company, alternativeBudget: AlternativeBudget) => void;
+  onGeneratePDF: (budget: Budget, company: Company, alternativeBudget: AlternativeBudget | undefined) => void;
 }
 
 const AlternativeBudgetsDialog = ({
@@ -45,55 +45,74 @@ const AlternativeBudgetsDialog = ({
     );
   };
 
+  const baseBudget = budgets.find(b => b.id === selectedBudgetAlternatives);
+  const company = baseBudget ? getCompanyById(baseBudget.empresa_base_id) : undefined;
+
   return (
     <Dialog open={!!selectedBudgetAlternatives} onOpenChange={() => onClose()}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Orçamentos Alternativos</DialogTitle>
+          <DialogTitle>Orçamentos</DialogTitle>
           <DialogDescription>
-            Visualize e baixe os orçamentos alternativos gerados
+            Visualize todos os orçamentos gerados
           </DialogDescription>
         </DialogHeader>
-        {selectedBudgetAlternatives && (
+        {selectedBudgetAlternatives && baseBudget && company && (
           <div>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Empresa</TableHead>
+                  <TableHead>Tipo</TableHead>
                   <TableHead>Valor Total</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {/* Base Budget Row */}
+                <TableRow>
+                  <TableCell>{company.nome}</TableCell>
+                  <TableCell>Original</TableCell>
+                  <TableCell>
+                    {formatCurrency(baseBudget.itens.reduce(
+                      (sum, item) => sum + item.quantidade * item.valor_unitario,
+                      0
+                    ))}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onGeneratePDF(baseBudget, company, undefined)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Visualizar
+                    </Button>
+                  </TableCell>
+                </TableRow>
+
+                {/* Alternative Budgets Rows */}
                 {getAlternativeBudgetsByBudgetId(selectedBudgetAlternatives).map((altBudget) => {
-                  const company = getCompanyById(altBudget.empresa_id);
-                  const budget = budgets.find(b => b.id === altBudget.orcamento_id);
+                  const altCompany = getCompanyById(altBudget.empresa_id);
+                  
+                  if (!altCompany) return null;
                   
                   return (
                     <TableRow key={altBudget.id}>
-                      <TableCell>{company?.nome || 'N/A'}</TableCell>
+                      <TableCell>{altCompany.nome}</TableCell>
+                      <TableCell>Alternativo</TableCell>
                       <TableCell>
                         {formatCurrency(calculateTotal(altBudget))}
                       </TableCell>
                       <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => budget && company && onGeneratePDF(budget, company, altBudget)}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Visualizar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => budget && company && onGeneratePDF(budget, company, altBudget)}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Baixar
-                          </Button>
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onGeneratePDF(baseBudget, altCompany, altBudget)}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Visualizar
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
