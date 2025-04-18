@@ -2,44 +2,7 @@
 import { Budget, Company, AlternativeBudget } from "@/types";
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { pdfUtils } from "./pdf-utils";
-import { pdfTemplates } from "./pdf-templates";
-
-// Function to generate a preview HTML string without actually creating a PDF
-export const generatePreviewHTML = (
-  budget: Budget,
-  company: Company,
-  alternativeBudget?: AlternativeBudget
-): string => {
-  try {
-    // Use alternative items if available, otherwise use base items
-    const items = alternativeBudget 
-      ? alternativeBudget.itens_com_valores_alterados
-      : budget.itens;
-
-    // Ensure the company's modelo_pdf is used, falling back to template1 if not found
-    const templateHtml = company.modelo_pdf && Object.values(pdfTemplates).includes(company.modelo_pdf)
-      ? company.modelo_pdf
-      : pdfTemplates.template1;
-
-    // Generate HTML with replaced placeholders
-    const filledHtml = pdfUtils.replacePlaceholders(
-      templateHtml,
-      company.nome,
-      company.cnpj,
-      company.representante,
-      company.endereco,
-      budget.cliente,
-      items,
-      budget.data_criacao
-    );
-
-    return filledHtml;
-  } catch (error) {
-    console.error("Error generating preview HTML:", error);
-    return "<div>Error generating preview</div>";
-  }
-};
+import { generatePreviewHTML } from "./preview-generator";
 
 export const generatePDF = async (
   budget: Budget,
@@ -78,7 +41,7 @@ export const generatePDF = async (
       
       // Render HTML to canvas
       const canvas = await html2canvas(tempDiv, {
-        scale: 2, // Higher scale for better quality
+        scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff'
@@ -86,8 +49,8 @@ export const generatePDF = async (
       
       // Convert canvas to PDF
       const imgData = canvas.toDataURL('image/png');
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
+      const imgWidth = 210;
+      const pageHeight = 297;
       const imgHeight = canvas.height * imgWidth / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
