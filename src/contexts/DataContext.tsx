@@ -1,24 +1,24 @@
-
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AlternativeBudget, Budget, BudgetItem, Company } from "@/types";
-import { defaultPdfTemplate, pdfTemplates } from "@/lib/pdf-templates";
+import { defaultPdfTemplate } from "@/lib/pdf-templates";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DataContextType {
   companies: Company[];
   budgets: Budget[];
   alternativeBudgets: AlternativeBudget[];
-  addCompany: (company: Omit<Company, "id" | "modelo_pdf"> & { modelo_pdf?: string }) => string;
-  updateCompany: (company: Company) => void;
-  deleteCompany: (id: string) => void;
+  addCompany: (company: Omit<Company, "id" | "modelo_pdf"> & { modelo_pdf?: string }) => Promise<string>;
+  updateCompany: (company: Company) => Promise<void>;
+  deleteCompany: (id: string) => Promise<void>;
   addBudget: (
     budget: Omit<Budget, "id" | "data_criacao" | "empresas_selecionadas_ids"> & {
       empresas_selecionadas_ids: string[];
     }
-  ) => string;
-  updateBudget: (budget: Budget) => void;
-  deleteBudget: (id: string) => void;
+  ) => Promise<string>;
+  updateBudget: (budget: Budget) => Promise<void>;
+  deleteBudget: (id: string) => Promise<void>;
   getCompanyById: (id: string) => Company | undefined;
   getBudgetById: (id: string) => Budget | undefined;
   getAlternativeBudgetsByBudgetId: (budgetId: string) => AlternativeBudget[];
@@ -31,181 +31,162 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-// Initial seed data for companies
-const initialCompanies: Company[] = [
-  {
-    id: uuidv4(),
-    nome: "Maria Beatriz Pereira Alves",
-    cnpj: "58.188.536/0001-62",
-    representante: "Maria Beatriz Pereira Alves",
-    endereco: "Ourinhos, SP",
-    modelo_pdf: pdfTemplates.template1,
-  },
-  {
-    id: uuidv4(),
-    nome: "Laura dos Santos Sakai - MEI",
-    cnpj: "52.928.895/0001-22",
-    representante: "Laura dos Santos Sakai",
-    endereco: "Campinas, SP",
-    modelo_pdf: pdfTemplates.template2,
-  },
-  {
-    id: uuidv4(),
-    nome: "Daniele Fabricia dos Santos",
-    cnpj: "52.019.295/0001-41",
-    representante: "Daniele Fabricia dos Santos",
-    endereco: "São Paulo, SP",
-    modelo_pdf: pdfTemplates.template3,
-  },
-];
-
-// Helper function to safely save data to localStorage
-const saveToLocalStorage = (key: string, data: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-    return true;
-  } catch (error) {
-    console.error(`Error saving ${key} data to localStorage:`, error);
-    toast.error(`Erro ao salvar dados de ${key}`);
-    return false;
-  }
-};
-
-// Helper function to safely load data from localStorage
-const loadFromLocalStorage = (key: string, defaultValue: any) => {
-  try {
-    const savedData = localStorage.getItem(key);
-    return savedData ? JSON.parse(savedData) : defaultValue;
-  } catch (error) {
-    console.error(`Error loading ${key} data from localStorage:`, error);
-    toast.error(`Erro ao carregar dados salvos de ${key}`);
-    return defaultValue;
-  }
-};
-
 export function DataProvider({ children }: { children: ReactNode }) {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [alternativeBudgets, setAlternativeBudgets] = useState<AlternativeBudget[]>([]);
-  const [dataInitialized, setDataInitialized] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Função para forçar o recarregamento de dados do localStorage
-  const reloadFromLocalStorage = () => {
-    try {
-      const savedCompanies = loadFromLocalStorage("companies", initialCompanies);
-      const savedBudgets = loadFromLocalStorage("budgets", []);
-      const savedAlternativeBudgets = loadFromLocalStorage("alternativeBudgets", []);
-
-      setCompanies(savedCompanies);
-      setBudgets(savedBudgets);
-      setAlternativeBudgets(savedAlternativeBudgets);
-      
-      console.log("Dados recarregados do localStorage:", {
-        companies: savedCompanies.length,
-        budgets: savedBudgets.length,
-        alternativeBudgets: savedAlternativeBudgets.length
-      });
-      
-      return true;
-    } catch (error) {
-      console.error("Erro ao recarregar dados:", error);
-      return false;
-    }
-  };
-
-  // Load saved data from localStorage on mount
+  // Carregar dados iniciais do Supabase
   useEffect(() => {
-    if (dataInitialized) return;
-    
-    const loadSuccess = reloadFromLocalStorage();
-    if (loadSuccess) {
-      setDataInitialized(true);
-    }
-    
-    // Adicione um listener para eventos de storage para detectar alterações feitas em outras abas/janelas
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "budgets" || event.key === "companies" || event.key === "alternativeBudgets") {
-        console.log("Detected localStorage change in another tab:", event.key);
-        reloadFromLocalStorage();
+    const loadInitialData = async () => {
+      try {
+        // Carregar empresas
+        const { data: companiesData, error: companiesError } = await supabase
+          .from('companies')
+          .select('*');
+        
+        if (companiesError) throw companiesError;
+        setCompanies(companiesData || []);
+
+        // Carregar orçamentos
+        const { data: budgetsData, error: budgetsError } = await supabase
+          .from('budgets')
+          .select('*');
+        
+        if (budgetsError) throw budgetsError;
+        setBudgets(budgetsData || []);
+
+        // Carregar orçamentos alternativos
+        const { data: altBudgetsData, error: altBudgetsError } = await supabase
+          .from('alternative_budgets')
+          .select('*');
+        
+        if (altBudgetsError) throw altBudgetsError;
+        setAlternativeBudgets(altBudgetsData || []);
+
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        toast.error('Erro ao carregar dados');
+      } finally {
+        setLoading(false);
       }
     };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [dataInitialized]);
 
-  // Save data to localStorage whenever it changes
+    loadInitialData();
+  }, []);
+
+  // Configurar listeners para atualizações em tempo real
   useEffect(() => {
-    if (!dataInitialized) return;
-    
-    console.log("Salvando dados no localStorage:", {
-      companies: companies.length,
-      budgets: budgets.length,
-      alternativeBudgets: alternativeBudgets.length
-    });
-    
-    saveToLocalStorage("companies", companies);
-    saveToLocalStorage("budgets", budgets);
-    saveToLocalStorage("alternativeBudgets", alternativeBudgets);
-  }, [companies, budgets, alternativeBudgets, dataInitialized]);
+    const companiesChannel = supabase
+      .channel('companies-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'companies' },
+        (payload) => {
+          console.log('Companies change received:', payload);
+          // Recarregar empresas quando houver mudanças
+          supabase
+            .from('companies')
+            .select('*')
+            .then(({ data }) => {
+              if (data) setCompanies(data);
+            });
+      })
+      .subscribe();
 
-  const addCompany = (
+    const budgetsChannel = supabase
+      .channel('budgets-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'budgets' },
+        (payload) => {
+          console.log('Budgets change received:', payload);
+          // Recarregar orçamentos quando houver mudanças
+          supabase
+            .from('budgets')
+            .select('*')
+            .then(({ data }) => {
+              if (data) setBudgets(data);
+            });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(companiesChannel);
+      supabase.removeChannel(budgetsChannel);
+    };
+  }, []);
+
+  const addCompany = async (
     company: Omit<Company, "id" | "modelo_pdf"> & { modelo_pdf?: string }
-  ): string => {
+  ): Promise<string> => {
     const id = uuidv4();
-    const newCompany: Company = {
-      ...company,
+    const newCompany = {
       id,
+      ...company,
       modelo_pdf: company.modelo_pdf || defaultPdfTemplate.html,
     };
-    
-    const updatedCompanies = [...companies, newCompany];
-    setCompanies(updatedCompanies);
-    saveToLocalStorage("companies", updatedCompanies);
-    
-    toast.success("Empresa adicionada com sucesso");
+
+    const { error } = await supabase
+      .from('companies')
+      .insert(newCompany);
+
+    if (error) {
+      console.error('Erro ao adicionar empresa:', error);
+      toast.error('Erro ao adicionar empresa');
+      throw error;
+    }
+
+    toast.success('Empresa adicionada com sucesso');
     return id;
   };
 
-  const updateCompany = (company: Company) => {
-    const updatedCompanies = companies.map((c) => (c.id === company.id ? company : c));
-    setCompanies(updatedCompanies);
-    saveToLocalStorage("companies", updatedCompanies);
-    
-    toast.success("Empresa atualizada com sucesso");
+  const updateCompany = async (company: Company): Promise<void> => {
+    const { error } = await supabase
+      .from('companies')
+      .update(company)
+      .eq('id', company.id);
+
+    if (error) {
+      console.error('Erro ao atualizar empresa:', error);
+      toast.error('Erro ao atualizar empresa');
+      throw error;
+    }
+
+    toast.success('Empresa atualizada com sucesso');
   };
 
-  const deleteCompany = (id: string) => {
-    // Check if company is used in any budget
+  const deleteCompany = async (id: string): Promise<void> => {
+    // Verificar se a empresa está sendo usada em algum orçamento
     const isUsed = budgets.some(
-      (b) =>
-        b.empresa_base_id === id || b.empresas_selecionadas_ids.includes(id)
+      (b) => b.empresa_base_id === id || b.empresas_selecionadas_ids.includes(id)
     );
 
     if (isUsed) {
-      toast.error(
-        "Esta empresa não pode ser excluída pois está sendo usada em um ou mais orçamentos"
-      );
+      toast.error('Esta empresa não pode ser excluída pois está sendo usada em um ou mais orçamentos');
       return;
     }
 
-    const updatedCompanies = companies.filter((c) => c.id !== id);
-    setCompanies(updatedCompanies);
-    saveToLocalStorage("companies", updatedCompanies);
-    
-    toast.success("Empresa excluída com sucesso");
+    const { error } = await supabase
+      .from('companies')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao excluir empresa:', error);
+      toast.error('Erro ao excluir empresa');
+      throw error;
+    }
+
+    toast.success('Empresa excluída com sucesso');
   };
 
-  const addBudget = (
+  const addBudget = async (
     budget: Omit<Budget, "id" | "data_criacao" | "empresas_selecionadas_ids"> & {
       empresas_selecionadas_ids: string[];
     }
-  ): string => {
+  ): Promise<string> => {
     const id = uuidv4();
-    const newBudget: Budget = {
+    const newBudget = {
       ...budget,
       id,
       data_criacao: new Date().toISOString(),
@@ -217,44 +198,62 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ],
     };
 
-    // Update the state and save to localStorage synchronously
-    const updatedBudgets = [...budgets, newBudget];
-    setBudgets(updatedBudgets);
-    saveToLocalStorage("budgets", updatedBudgets);
-    
-    console.log("Orçamento adicionado com sucesso:", newBudget);
-    console.log("Total de orçamentos após adição:", updatedBudgets.length);
-    
-    toast.success("Orçamento criado com sucesso");
+    const { error } = await supabase
+      .from('budgets')
+      .insert(newBudget);
+
+    if (error) {
+      console.error('Erro ao adicionar orçamento:', error);
+      toast.error('Erro ao criar orçamento');
+      throw error;
+    }
+
+    console.log('Orçamento adicionado com sucesso:', newBudget);
+    toast.success('Orçamento criado com sucesso');
     return id;
   };
 
-  const updateBudget = (budget: Budget) => {
-    // Remove any alternative budgets for this budget as they'll need to be regenerated
-    const filteredAltBudgets = alternativeBudgets.filter((ab) => ab.orcamento_id !== budget.id);
-    setAlternativeBudgets(filteredAltBudgets);
-    saveToLocalStorage("alternativeBudgets", filteredAltBudgets);
+  const updateBudget = async (budget: Budget): Promise<void> => {
+    // Primeiro, excluir orçamentos alternativos existentes
+    const { error: deleteError } = await supabase
+      .from('alternative_budgets')
+      .delete()
+      .eq('orcamento_id', budget.id);
 
-    // Update budgets and save synchronously
-    const updatedBudgets = budgets.map((b) => (b.id === budget.id ? budget : b));
-    setBudgets(updatedBudgets);
-    saveToLocalStorage("budgets", updatedBudgets);
-    
-    toast.success("Orçamento atualizado com sucesso");
-    return budget;
+    if (deleteError) {
+      console.error('Erro ao excluir orçamentos alternativos:', deleteError);
+      toast.error('Erro ao atualizar orçamento');
+      throw deleteError;
+    }
+
+    // Depois, atualizar o orçamento
+    const { error: updateError } = await supabase
+      .from('budgets')
+      .update(budget)
+      .eq('id', budget.id);
+
+    if (updateError) {
+      console.error('Erro ao atualizar orçamento:', updateError);
+      toast.error('Erro ao atualizar orçamento');
+      throw updateError;
+    }
+
+    toast.success('Orçamento atualizado com sucesso');
   };
 
-  const deleteBudget = (id: string) => {
-    const updatedBudgets = budgets.filter((b) => b.id !== id);
-    setBudgets(updatedBudgets);
-    saveToLocalStorage("budgets", updatedBudgets);
-    
-    // Delete all alternative budgets for this budget
-    const updatedAltBudgets = alternativeBudgets.filter((ab) => ab.orcamento_id !== id);
-    setAlternativeBudgets(updatedAltBudgets);
-    saveToLocalStorage("alternativeBudgets", updatedAltBudgets);
-    
-    toast.success("Orçamento excluído com sucesso");
+  const deleteBudget = async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('budgets')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao excluir orçamento:', error);
+      toast.error('Erro ao excluir orçamento');
+      throw error;
+    }
+
+    toast.success('Orçamento excluído com sucesso');
   };
 
   const getCompanyById = (id: string): Company | undefined => {
@@ -279,44 +278,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const generateAlternativeBudgets = async (budgetId: string): Promise<string[]> => {
-    console.log("Generating alternative budgets for budget ID:", budgetId);
+    console.log('Gerando orçamentos alternativos para o orçamento:', budgetId);
     
-    // Make sure we're working with the latest data from state
     const budget = budgets.find(b => b.id === budgetId);
     if (!budget) {
-      console.error("Budget not found with ID:", budgetId);
-      toast.error("Orçamento não encontrado");
+      console.error('Orçamento não encontrado:', budgetId);
+      toast.error('Orçamento não encontrado');
       return [];
     }
 
-    // First company is the base
     const baseCompanyId = budget.empresa_base_id;
-    console.log("Base company ID:", baseCompanyId);
     const otherCompanyIds = budget.empresas_selecionadas_ids.filter(
       (id) => id !== baseCompanyId
     );
-    console.log("Other company IDs:", otherCompanyIds);
 
-    // Clear any existing alternative budgets for this budget
-    const filteredBudgets = alternativeBudgets.filter((ab) => ab.orcamento_id !== budgetId);
-    
-    // Generate new alternative budgets
     const newAlternativeBudgetIds: string[] = [];
     const newAlternativeBudgets: AlternativeBudget[] = [];
 
-    otherCompanyIds.forEach((companyId) => {
+    for (const companyId of otherCompanyIds) {
       const altBudgetId = uuidv4();
       newAlternativeBudgetIds.push(altBudgetId);
 
-      // Create alternative items with different prices for each company
       const alternativeItems: BudgetItem[] = budget.itens.map((item) => {
-        // Each company gets a different random percentage between 5% and 20%
         const increasePercentage = 5 + Math.random() * 15;
         const increaseFactor = 1 + increasePercentage / 100;
         
         return {
           ...item,
-          id: uuidv4(), // Generate a new ID for each item
+          id: uuidv4(),
           valor_unitario: Math.ceil(item.valor_unitario * increaseFactor * 100) / 100,
         };
       });
@@ -329,24 +318,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
       };
 
       newAlternativeBudgets.push(newAltBudget);
-      console.log("Created alternative budget:", newAltBudget);
-    });
-
-    // Update state with all new alternative budgets at once
-    const updatedAlternativeBudgets = [...filteredBudgets, ...newAlternativeBudgets];
-    setAlternativeBudgets(updatedAlternativeBudgets);
-    
-    // Save to localStorage immediately to prevent data loss
-    const saved = saveToLocalStorage("alternativeBudgets", updatedAlternativeBudgets);
-    
-    if (saved && newAlternativeBudgetIds.length > 0) {
-      toast.success(`${otherCompanyIds.length} orçamentos alternativos gerados`);
-    } else if (saved) {
-      toast.info("Nenhuma empresa adicional selecionada para gerar orçamentos alternativos");
     }
-    
+
+    if (newAlternativeBudgets.length > 0) {
+      const { error } = await supabase
+        .from('alternative_budgets')
+        .insert(newAlternativeBudgets);
+
+      if (error) {
+        console.error('Erro ao gerar orçamentos alternativos:', error);
+        toast.error('Erro ao gerar orçamentos alternativos');
+        throw error;
+      }
+
+      toast.success(`${otherCompanyIds.length} orçamentos alternativos gerados`);
+    } else {
+      toast.info('Nenhuma empresa adicional selecionada para gerar orçamentos alternativos');
+    }
+
     return newAlternativeBudgetIds;
   };
+
+  if (loading) {
+    return <div>Carregando...</div>;
+  }
 
   return (
     <DataContext.Provider
