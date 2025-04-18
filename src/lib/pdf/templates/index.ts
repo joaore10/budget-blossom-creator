@@ -9,6 +9,4 @@ export const pdfTemplates = {
   template3,
 };
 
-export const defaultPdfTemplate = {
-  html: pdfTemplates.template1
-};
+export const defaultPdfTemplate = pdfTemplates.template1;
