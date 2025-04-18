@@ -20,7 +20,7 @@ class DatabaseService {
     };
   }
 
-  createCompany(company: Omit<Company, "id">): string {
+  createCompany(company: Omit<Company, "id"> & { modelo_pdf?: string }): string {
     const id = crypto.randomUUID();
     statements.companies.insert.run(
       id,

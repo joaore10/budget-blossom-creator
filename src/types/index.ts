@@ -4,7 +4,7 @@ export interface Company {
   cnpj: string;
   representante: string;
   endereco: string;
-  modelo_pdf: string;
+  modelo_pdf?: string;
 }
 
 export interface BudgetItem {

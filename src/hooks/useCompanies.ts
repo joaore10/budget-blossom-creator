@@ -23,12 +23,12 @@ export function useCompanies(initialCompanies: Company[] = []) {
   }, []);
 
   const addCompany = useCallback(async (
-    company: Omit<Company, "id" | "modelo_pdf"> & { modelo_pdf?: string }
+    company: Omit<Company, "id"> & { modelo_pdf?: string }
   ): Promise<string> => {
     try {
       const id = dbService.createCompany(company);
-      const newCompany = { ...company, id, modelo_pdf: company.modelo_pdf || undefined };
-      setCompanies(prev => [...prev, newCompany]);
+      const newCompany = { ...company, id, modelo_pdf: company.modelo_pdf || "" };
+      setCompanies(prev => [...prev, newCompany as Company]);
       toast.success('Empresa adicionada com sucesso');
       return id;
     } catch (error) {
