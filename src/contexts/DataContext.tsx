@@ -1,4 +1,3 @@
-
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useBudgets } from "@/hooks/useBudgets";
@@ -34,11 +33,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const [loading, setLoading] = useState(true);
 
-  // Carregar dados iniciais do Supabase
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // Carregar empresas
         const { data: companiesData, error: companiesError } = await (supabase as any)
           .from('companies')
           .select('*');
@@ -46,7 +43,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (companiesError) throw companiesError;
         setCompanies(companiesData || []);
 
-        // Carregar orçamentos
         const { data: budgetsData, error: budgetsError } = await (supabase as any)
           .from('budgets')
           .select('*');
@@ -54,7 +50,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (budgetsError) throw budgetsError;
         setBudgets(budgetsData || []);
 
-        // Carregar orçamentos alternativos
         const { data: altBudgetsData, error: altBudgetsError } = await (supabase as any)
           .from('alternative_budgets')
           .select('*');
@@ -73,7 +68,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     loadInitialData();
   }, [setCompanies, setBudgets, setAlternativeBudgets]);
 
-  // Configurar listeners para atualizações em tempo real
   useEffect(() => {
     const companiesChannel = supabase
       .channel('companies-changes')
@@ -81,7 +75,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         { event: '*', schema: 'public', table: 'companies' },
         (payload) => {
           console.log('Companies change received:', payload);
-          // Recarregar empresas quando houver mudanças
           (supabase as any)
             .from('companies')
             .select('*')
@@ -97,7 +90,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         { event: '*', schema: 'public', table: 'budgets' },
         (payload) => {
           console.log('Budgets change received:', payload);
-          // Recarregar orçamentos quando houver mudanças
           (supabase as any)
             .from('budgets')
             .select('*')
@@ -107,14 +99,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       })
       .subscribe();
 
-    // Adicionar listener para orçamentos alternativos
     const altBudgetsChannel = supabase
       .channel('alt-budgets-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'alternative_budgets' },
         (payload) => {
           console.log('Alternative budgets change received:', payload);
-          // Recarregar orçamentos alternativos quando houver mudanças
           (supabase as any)
             .from('alternative_budgets')
             .select('*')
@@ -144,6 +134,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         companies,
         budgets,
         alternativeBudgets,
+        setAlternativeBudgets,
         addCompany,
         updateCompany,
         deleteCompany,

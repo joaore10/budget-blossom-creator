@@ -16,4 +16,5 @@ export interface DataContextType {
   getAlternativeBudgetsByBudgetId: (budgetId: string) => AlternativeBudget[];
   getAlternativeBudgetByCompanyAndBudget: (budgetId: string, companyId: string) => AlternativeBudget | undefined;
   generateAlternativeBudgets: (budgetId: string) => Promise<string[]>;
+  setAlternativeBudgets: (alternativeBudgets: AlternativeBudget[]) => void;
 }
