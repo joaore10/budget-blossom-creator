@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Budget } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { Edit, FileText, Eye, Trash2 } from "lucide-react";
+import { Edit, FileText, Eye, Trash2, AlertTriangle } from "lucide-react";
 import BudgetStatus from "./BudgetStatus";
 
 interface BudgetTableProps {
