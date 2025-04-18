@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -28,6 +27,8 @@ import {
   AlertTriangle,
   FileText,
   FilePlus,
+  Download,
+  Eye,
 } from "lucide-react";
 import {
   Dialog,
@@ -56,6 +57,7 @@ const BudgetsPage = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [budgetToDelete, setBudgetToDelete] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedBudgetAlternatives, setSelectedBudgetAlternatives] = useState<string | null>(null);
 
   useEffect(() => {
     let sorted = [...budgets].sort((a, b) => {
@@ -160,6 +162,34 @@ const BudgetsPage = () => {
       (sum, item) => sum + item.quantidade * item.valor_unitario,
       0
     );
+  };
+
+  const handleViewAlternativeBudgets = (budgetId: string) => {
+    setSelectedBudgetAlternatives(budgetId);
+  };
+
+  const handleDownloadAlternativeBudgets = async (budget: typeof budgets[0]) => {
+    const alternativeBudgetsList = getAlternativeBudgetsByBudgetId(budget.id);
+    
+    if (alternativeBudgetsList.length === 0) {
+      toast.info("Nenhum orçamento alternativo disponível");
+      return;
+    }
+
+    toast.info("Baixando orçamentos alternativos...");
+    
+    try {
+      for (const altBudget of alternativeBudgetsList) {
+        const company = getCompanyById(altBudget.empresa_id);
+        if (company) {
+          await generatePDF(budget, company, altBudget);
+        }
+      }
+      toast.success("Orçamentos alternativos baixados com sucesso");
+    } catch (error) {
+      console.error("Erro ao baixar orçamentos alternativos:", error);
+      toast.error("Erro ao baixar orçamentos alternativos");
+    }
   };
 
   return (
@@ -306,6 +336,80 @@ const BudgetsPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog 
+        open={!!selectedBudgetAlternatives} 
+        onOpenChange={() => setSelectedBudgetAlternatives(null)}
+      >
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Orçamentos Alternativos</DialogTitle>
+            <DialogDescription>
+              Visualize e baixe os orçamentos alternativos gerados
+            </DialogDescription>
+          </DialogHeader>
+          {selectedBudgetAlternatives && (
+            <div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Empresa</TableHead>
+                    <TableHead>Valor Total</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {getAlternativeBudgetsByBudgetId(selectedBudgetAlternatives).map((altBudget) => {
+                    const company = getCompanyById(altBudget.empresa_id);
+                    const budget = budgets.find(b => b.id === altBudget.orcamento_id);
+                    
+                    const calculateTotal = () => {
+                      return altBudget.itens_com_valores_alterados.reduce(
+                        (sum, item) => sum + item.quantidade * item.valor_unitario,
+                        0
+                      );
+                    };
+
+                    return (
+                      <TableRow key={altBudget.id}>
+                        <TableCell>{company?.nome || 'N/A'}</TableCell>
+                        <TableCell>
+                          {formatCurrency(calculateTotal())}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => budget && company && generatePDF(budget, company, altBudget)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Visualizar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => budget && company && generatePDF(budget, company, altBudget)}
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Baixar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setSelectedBudgetAlternatives(null)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <DialogContent>
