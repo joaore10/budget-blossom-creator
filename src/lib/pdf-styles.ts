@@ -14,6 +14,8 @@ export const commonStyles = `
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border-radius: 8px;
     overflow: hidden;
+    table-layout: fixed;
+    page-break-inside: avoid;
   }
   th {
     background: #8B5CF6;
@@ -28,6 +30,9 @@ export const commonStyles = `
   tr:last-child td {
     border-bottom: none;
   }
+  tr {
+    page-break-inside: avoid;
+  }
   h2 {
     color: #8B5CF6;
     font-size: 28px;
@@ -35,5 +40,21 @@ export const commonStyles = `
     border-bottom: 2px solid #E5DEFF;
     padding-bottom: 10px;
   }
+  @media print {
+    @page {
+      size: A4;
+      margin: 1cm;
+    }
+    body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+  .pdf-container {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 10mm;
+    margin: 0 auto;
+    background: white;
+  }
 `;
-
