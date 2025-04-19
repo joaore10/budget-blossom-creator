@@ -171,63 +171,27 @@ class DatabaseService {
     await this.initDB();
     if (!this.db) throw new Error('Banco de dados não inicializado');
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        const transaction = this.db!.transaction(['budgets', 'alternativeBudgets'], 'readwrite');
-        const budgetStore = transaction.objectStore('budgets');
-        const altBudgetStore = transaction.objectStore('alternativeBudgets');
+        // First get all alternative budgets for this budget
+        const alternativeBudgets = await this.getAlternativeBudgets(id);
         
-        // This will hold our batch operations
-        const operations: Promise<any>[] = [];
+        // Delete each alternative budget individually
+        for (const altBudget of alternativeBudgets) {
+          await this.deleteAlternativeBudget(altBudget.id);
+        }
         
-        // First, get all alternative budgets for this budget
-        this.getAlternativeBudgets(id).then(altBudgets => {
-          // Delete each alternative budget
-          altBudgets.forEach(altBudget => {
-            operations.push(
-              new Promise((resolveAlt, rejectAlt) => {
-                const deleteAltRequest = altBudgetStore.delete(altBudget.id);
-                deleteAltRequest.onerror = () => {
-                  console.error(`Erro ao excluir orçamento alternativo ${altBudget.id}`);
-                  rejectAlt(new Error(`Erro ao excluir orçamento alternativo ${altBudget.id}`));
-                };
-                deleteAltRequest.onsuccess = () => resolveAlt(null);
-              })
-            );
-          });
-          
-          // Add operation to delete the main budget
-          operations.push(
-            new Promise((resolveBudget, rejectBudget) => {
-              const deleteRequest = budgetStore.delete(id);
-              deleteRequest.onerror = () => {
-                console.error(`Erro ao excluir orçamento ${id}`);
-                rejectBudget(new Error(`Erro ao excluir orçamento ${id}`));
-              };
-              deleteRequest.onsuccess = () => resolveBudget(null);
-            })
-          );
-          
-          // Wait for all operations to complete
-          Promise.all(operations)
-            .then(() => {
-              resolve();
-            })
-            .catch(error => {
-              reject(error);
-            });
-        }).catch(error => {
-          reject(error);
-        });
+        // Now delete the main budget
+        const budgetStore = await this.getStore('budgets', 'readwrite');
+        const deleteRequest = budgetStore.delete(id);
         
-        // Add transaction error handling
-        transaction.onerror = (event) => {
-          console.error('Transação falhou:', event);
-          reject(new Error('A transação de exclusão falhou'));
+        deleteRequest.onsuccess = () => resolve();
+        deleteRequest.onerror = (event) => {
+          console.error(`Erro ao excluir orçamento ${id}:`, event);
+          reject(new Error(`Erro ao excluir orçamento ${id}`));
         };
-        
       } catch (error) {
-        console.error('Erro ao iniciar transação:', error);
+        console.error('Erro durante a exclusão do orçamento:', error);
         reject(error);
       }
     });

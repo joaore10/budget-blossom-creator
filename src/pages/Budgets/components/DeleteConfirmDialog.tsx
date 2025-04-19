@@ -34,7 +34,7 @@ const DeleteConfirmDialog = ({
       onOpenChange(false);
     } catch (error) {
       console.error("Erro ao excluir orçamento:", error);
-      toast.error("Erro ao excluir orçamento");
+      toast.error("Erro ao excluir orçamento. Por favor, tente novamente.");
     } finally {
       setInternalIsDeleting(false);
     }
@@ -43,7 +43,13 @@ const DeleteConfirmDialog = ({
   const isProcessing = isDeleting || internalIsDeleting;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      // Prevent closing the dialog while deleting
+      if (isProcessing && isOpen === false) {
+        return;
+      }
+      onOpenChange(isOpen);
+    }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirmar exclusão</DialogTitle>
