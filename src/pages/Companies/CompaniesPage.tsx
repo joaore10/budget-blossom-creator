@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Phone, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -84,8 +83,10 @@ const CompaniesPage = () => {
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
-                    <TableHead className="font-semibold">Nome</TableHead>
+                    <TableHead className="font-semibold">Nome Fantasia</TableHead>
+                    <TableHead className="font-semibold">Razão Social</TableHead>
                     <TableHead className="font-semibold">CNPJ</TableHead>
+                    <TableHead className="font-semibold">Contato</TableHead>
                     <TableHead className="font-semibold">Representante</TableHead>
                     <TableHead className="font-semibold">Endereço</TableHead>
                     <TableHead className="text-right font-semibold w-[100px]">Ações</TableHead>
@@ -94,15 +95,43 @@ const CompaniesPage = () => {
                 <TableBody>
                   {filteredCompanies.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center py-4 text-muted-foreground">
                         Nenhuma empresa encontrada
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredCompanies.map((company) => (
                       <TableRow key={company.id} className="hover:bg-gray-50">
-                        <TableCell className="font-medium">{company.nome}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {company.logo && (
+                              <img 
+                                src={company.logo} 
+                                alt={`Logo ${company.nome}`} 
+                                className="w-8 h-8 object-contain"
+                              />
+                            )}
+                            {company.nome}
+                          </div>
+                        </TableCell>
+                        <TableCell>{company.razao_social || "-"}</TableCell>
                         <TableCell>{company.cnpj}</TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {company.telefone && (
+                              <div className="flex items-center gap-1 text-sm">
+                                <Phone className="h-3 w-3" />
+                                {company.telefone}
+                              </div>
+                            )}
+                            {company.email && (
+                              <div className="flex items-center gap-1 text-sm">
+                                <Mail className="h-3 w-3" />
+                                {company.email}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>{company.representante}</TableCell>
                         <TableCell className="max-w-[250px] truncate" title={company.endereco}>
                           {company.endereco}

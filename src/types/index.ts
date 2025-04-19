@@ -1,8 +1,11 @@
-
 export interface Company {
   id: string;
   nome: string;
+  razao_social?: string;
   cnpj: string;
+  telefone?: string;
+  email?: string;
+  logo?: string;
   representante: string;
   endereco: string;
   modelo_pdf?: string;
