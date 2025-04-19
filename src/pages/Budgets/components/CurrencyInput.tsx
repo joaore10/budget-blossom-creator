@@ -19,52 +19,45 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Get the raw input value
-    let inputValue = e.target.value;
+    const inputValue = e.target.value;
     
-    // Allow only digits and a single comma
-    const cleanedInput = inputValue.replace(/[^\d,]/g, '');
+    // Allow digits and comma
+    const regex = /^[0-9]*,?[0-9]*$/;
     
-    // Ensure there's only one comma
-    const parts = cleanedInput.split(',');
-    let formattedValue = parts[0];
-    
-    if (parts.length > 1) {
-      formattedValue += ',' + parts[1];
-    }
-    
-    // Update the input field with the formatted value
-    e.target.value = formattedValue;
-    
-    // Convert to number for the parent component (only if valid)
-    if (formattedValue) {
-      const numericValue = formattedValue.replace(',', '.');
-      const parsedValue = parseFloat(numericValue);
+    // Only update if the input matches our pattern or is empty
+    if (inputValue === '' || regex.test(inputValue)) {
+      e.target.value = inputValue;
       
-      if (!isNaN(parsedValue)) {
-        onChange(parsedValue);
+      if (inputValue && inputValue !== ',') {
+        // Convert comma to period for JavaScript parsing
+        const numericValue = inputValue.replace(',', '.');
+        const parsedValue = parseFloat(numericValue);
+        
+        if (!isNaN(parsedValue)) {
+          onChange(parsedValue);
+        }
+      } else if (inputValue === '') {
+        onChange(0);
       }
-    } else {
-      onChange(0);
     }
   };
 
-  // Handle blur to format the value properly when leaving the input
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     
-    if (!inputValue || inputValue === '') {
+    if (!inputValue || inputValue === '' || inputValue === ',') {
       e.target.value = '';
       onChange(0);
       return;
     }
     
     try {
-      // Replace comma with period for JS number parsing
+      // Convert comma to period for JavaScript parsing
       const numericValue = inputValue.replace(',', '.');
       const parsedValue = parseFloat(numericValue);
       
       if (!isNaN(parsedValue)) {
-        // Just keep the value as is, with comma as decimal separator if present
+        // Format the value with comma as decimal separator
         const formattedValue = parsedValue.toString().replace('.', ',');
         e.target.value = formattedValue;
         onChange(parsedValue);
