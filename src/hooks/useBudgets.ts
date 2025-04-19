@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { Budget, AlternativeBudget } from '@/types';
 import { dbService } from '@/services/DatabaseService';
@@ -9,7 +8,6 @@ export function useBudgets() {
   const [alternativeBudgets, setAlternativeBudgets] = useState<AlternativeBudget[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Carrega os orçamentos ao iniciar
   useEffect(() => {
     const loadBudgets = async () => {
       setIsLoading(true);
@@ -112,7 +110,7 @@ export function useBudgets() {
     []
   );
 
-  const generateAlternativeBudgets = useCallback(async (budgetId: string): Promise<string[]> => {
+  const generateAlternativeBudgets = useCallback(async (budgetId: string, maxRange: number = 10): Promise<string[]> => {
     const budget = budgets.find(b => b.id === budgetId);
     if (!budget) {
       toast.error('Orçamento não encontrado');
@@ -133,7 +131,8 @@ export function useBudgets() {
         const existingAlt = existingAlts.find(alt => alt.empresa_id === companyId);
         
         const alternativeItems = budget.itens.map((item) => {
-          const increasePercentage = 5 + Math.random() * 15;
+          // Gera um aumento aleatório entre 1% e maxRange% para cada item
+          const increasePercentage = 1 + Math.random() * (maxRange - 1);
           const increaseFactor = 1 + increasePercentage / 100;
           
           return {
