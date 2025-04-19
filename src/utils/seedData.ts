@@ -1,6 +1,6 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { Company, Budget, AlternativeBudget } from "@/types";
+import { dbService } from "@/services/DatabaseService";
+import { Company } from "@/types";
 
 const sampleCompanies: Omit<Company, "id">[] = [
   {
@@ -29,16 +29,10 @@ const sampleCompanies: Omit<Company, "id">[] = [
 export async function seedInitialData() {
   try {
     // Seed Companies
-    const { data: companiesData, error: companiesError } = await supabase
-      .from('companies')
-      .upsert(sampleCompanies, { 
-        onConflict: 'cnpj'
-      });
-
-    if (companiesError) throw companiesError;
-
+    for (const company of sampleCompanies) {
+      await dbService.createCompany(company);
+    }
     console.log('Companies seeded successfully');
-
   } catch (error) {
     console.error('Seeding failed:', error);
     throw error;
@@ -48,12 +42,8 @@ export async function seedInitialData() {
 // Função para executar seed na inicialização do app
 export async function runInitialSeed() {
   try {
-    // Verifica se já existem empresas
-    const { count } = await supabase
-      .from('companies')
-      .select('*', { count: 'exact', head: true });
-
-    if (count === 0) {
+    const companies = await dbService.getAllCompanies();
+    if (companies.length === 0) {
       await seedInitialData();
     }
   } catch (error) {

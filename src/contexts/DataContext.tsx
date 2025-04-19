@@ -1,8 +1,8 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+
+import { createContext, ReactNode, useContext } from "react";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useBudgets } from "@/hooks/useBudgets";
 import { DataContextType } from "./types";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -30,103 +30,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     getAlternativeBudgetByCompanyAndBudget,
     generateAlternativeBudgets,
   } = useBudgets();
-
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const { data: companiesData, error: companiesError } = await (supabase as any)
-          .from('companies')
-          .select('*');
-        
-        if (companiesError) throw companiesError;
-        setCompanies(companiesData || []);
-
-        const { data: budgetsData, error: budgetsError } = await (supabase as any)
-          .from('budgets')
-          .select('*');
-        
-        if (budgetsError) throw budgetsError;
-        setBudgets(budgetsData || []);
-
-        const { data: altBudgetsData, error: altBudgetsError } = await (supabase as any)
-          .from('alternative_budgets')
-          .select('*');
-        
-        if (altBudgetsError) throw altBudgetsError;
-        setAlternativeBudgets(altBudgetsData || []);
-
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        toast.error('Erro ao carregar dados');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInitialData();
-  }, [setCompanies, setBudgets, setAlternativeBudgets]);
-
-  useEffect(() => {
-    const companiesChannel = supabase
-      .channel('companies-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'companies' },
-        (payload) => {
-          console.log('Companies change received:', payload);
-          (supabase as any)
-            .from('companies')
-            .select('*')
-            .then(({ data }) => {
-              if (data) setCompanies(data);
-            });
-      })
-      .subscribe();
-
-    const budgetsChannel = supabase
-      .channel('budgets-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'budgets' },
-        (payload) => {
-          console.log('Budgets change received:', payload);
-          (supabase as any)
-            .from('budgets')
-            .select('*')
-            .then(({ data }) => {
-              if (data) setBudgets(data);
-            });
-      })
-      .subscribe();
-
-    const altBudgetsChannel = supabase
-      .channel('alt-budgets-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'alternative_budgets' },
-        (payload) => {
-          console.log('Alternative budgets change received:', payload);
-          (supabase as any)
-            .from('alternative_budgets')
-            .select('*')
-            .then(({ data }) => {
-              if (data) {
-                console.log("Atualizando orçamentos alternativos:", data);
-                setAlternativeBudgets(data);
-              }
-            });
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(companiesChannel);
-      supabase.removeChannel(budgetsChannel);
-      supabase.removeChannel(altBudgetsChannel);
-    };
-  }, [setCompanies, setBudgets, setAlternativeBudgets]);
-
-  if (loading) {
-    return <div>Carregando...</div>;
-  }
 
   return (
     <DataContext.Provider
