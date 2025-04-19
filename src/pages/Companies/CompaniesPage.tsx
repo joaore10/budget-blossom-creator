@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useData } from "@/contexts/DataContext";
@@ -83,13 +84,13 @@ const CompaniesPage = () => {
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
-                    <TableHead className="font-semibold">Nome Fantasia</TableHead>
-                    <TableHead className="font-semibold">Razão Social</TableHead>
-                    <TableHead className="font-semibold">CNPJ</TableHead>
-                    <TableHead className="font-semibold">Contato</TableHead>
-                    <TableHead className="font-semibold">Representante</TableHead>
-                    <TableHead className="font-semibold">Endereço</TableHead>
-                    <TableHead className="text-right font-semibold w-[100px]">Ações</TableHead>
+                    <TableHead className="font-semibold text-center">Nome Fantasia</TableHead>
+                    <TableHead className="font-semibold text-center">Razão Social</TableHead>
+                    <TableHead className="font-semibold text-center">CNPJ</TableHead>
+                    <TableHead className="font-semibold text-center">Contato</TableHead>
+                    <TableHead className="font-semibold text-center">Representante</TableHead>
+                    <TableHead className="font-semibold text-center">Endereço</TableHead>
+                    <TableHead className="text-center font-semibold w-[100px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -102,8 +103,8 @@ const CompaniesPage = () => {
                   ) : (
                     filteredCompanies.map((company) => (
                       <TableRow key={company.id} className="hover:bg-gray-50">
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
+                        <TableCell className="font-medium text-center">
+                          <div className="flex items-center justify-center gap-2">
                             {company.logo && (
                               <img 
                                 src={company.logo} 
@@ -114,10 +115,10 @@ const CompaniesPage = () => {
                             {company.nome}
                           </div>
                         </TableCell>
-                        <TableCell>{company.razao_social || "-"}</TableCell>
-                        <TableCell>{company.cnpj}</TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
+                        <TableCell className="text-center">{company.razao_social || "-"}</TableCell>
+                        <TableCell className="text-center">{company.cnpj}</TableCell>
+                        <TableCell className="text-center">
+                          <div className="space-y-1 flex flex-col items-center">
                             {company.telefone && (
                               <div className="flex items-center gap-1 text-sm">
                                 <Phone className="h-3 w-3" />
@@ -132,12 +133,12 @@ const CompaniesPage = () => {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{company.representante}</TableCell>
-                        <TableCell className="max-w-[250px] truncate" title={company.endereco}>
+                        <TableCell className="text-center">{company.representante}</TableCell>
+                        <TableCell className="max-w-[250px] truncate text-center" title={company.endereco}>
                           {company.endereco}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
+                        <TableCell className="text-center">
+                          <div className="flex justify-center gap-2">
                             <Button
                               variant="ghost"
                               size="icon"

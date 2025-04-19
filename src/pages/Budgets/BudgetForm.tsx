@@ -25,6 +25,7 @@ import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { generatePDF } from "@/lib/pdf/document-generator";
+import CurrencyInput from "./components/CurrencyInput";
 
 const unidadeOptions = [
   "UNIDADE",
@@ -156,8 +157,7 @@ const BudgetForm = () => {
           if (field === "quantidade") {
             return { ...item, [field]: parseInt(value as string) || 0 };
           } else if (field === "valor_unitario") {
-            let processedValue = String(value).replace(/\./g, "").replace(",", ".");
-            return { ...item, [field]: parseFloat(processedValue) || 0 };
+            return { ...item, [field]: value };
           }
           return { ...item, [field]: value };
         }
@@ -291,13 +291,6 @@ const BudgetForm = () => {
     } else {
       toast.error("Salve o orçamento antes de gerar o PDF");
     }
-  };
-
-  const formatValorUnitario = (valor: number) => {
-    return valor.toLocaleString('pt-BR', { 
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2 
-    });
   };
 
   return (
@@ -498,15 +491,12 @@ const BudgetForm = () => {
                             <Label htmlFor={`item-unit-price-${item.id}`}>
                               Valor Unitário
                             </Label>
-                            <Input
+                            <CurrencyInput
                               id={`item-unit-price-${item.id}`}
-                              type="text"
-                              value={formatValorUnitario(item.valor_unitario)}
-                              onChange={(e) =>
-                                updateItem(item.id, "valor_unitario", e.target.value)
-                              }
+                              value={item.valor_unitario}
+                              onChange={(value) => updateItem(item.id, "valor_unitario", value)}
                               className="bg-gray-50 border-0"
-                              inputMode="decimal"
+                              placeholder="0,00"
                             />
                           </div>
                         </div>
