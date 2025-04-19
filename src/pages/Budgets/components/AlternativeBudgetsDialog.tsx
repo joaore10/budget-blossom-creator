@@ -20,7 +20,7 @@ import { Eye, Download } from "lucide-react";
 import { Company, Budget, AlternativeBudget } from "@/types";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { generatePreviewHTML } from "@/lib/pdf/preview-generator";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface AlternativeBudgetsDialogProps {
   selectedBudgetAlternatives: string | null;
@@ -43,15 +43,29 @@ const AlternativeBudgetsDialog = ({
 }: AlternativeBudgetsDialogProps) => {
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [alternativeBudgets, setAlternativeBudgets] = useState<AlternativeBudget[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Load alternative budgets when the dialog opens
-  useState(() => {
-    if (selectedBudgetAlternatives) {
-      getAlternativeBudgetsByBudgetId().then(results => {
-        setAlternativeBudgets(results);
-      });
-    }
-  });
+  useEffect(() => {
+    const loadAlternatives = async () => {
+      if (selectedBudgetAlternatives) {
+        setIsLoading(true);
+        try {
+          const results = await getAlternativeBudgetsByBudgetId();
+          setAlternativeBudgets(results);
+          console.log("Loaded alternative budgets:", results);
+        } catch (error) {
+          console.error("Error loading alternative budgets:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setAlternativeBudgets([]);
+      }
+    };
+    
+    loadAlternatives();
+  }, [selectedBudgetAlternatives, getAlternativeBudgetsByBudgetId]);
   
   const calculateTotal = (altBudget: AlternativeBudget) => {
     return altBudget.itens_com_valores_alterados.reduce(
@@ -134,8 +148,29 @@ const AlternativeBudgetsDialog = ({
                   </TableCell>
                 </TableRow>
 
+                {/* Loading indicator */}
+                {isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4">
+                      <div className="flex justify-center items-center">
+                        <div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div>
+                        <span className="ml-2">Carregando orçamentos alternativos...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+
+                {/* No alternative budgets message */}
+                {!isLoading && alternativeBudgets.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4">
+                      <p className="text-muted-foreground">Nenhum orçamento alternativo encontrado</p>
+                    </TableCell>
+                  </TableRow>
+                )}
+
                 {/* Alternative Budgets Rows */}
-                {alternativeBudgets.map((altBudget) => {
+                {!isLoading && alternativeBudgets.map((altBudget) => {
                   const altCompany = getCompanyById(altBudget.empresa_id);
                   
                   if (!altCompany) return null;
