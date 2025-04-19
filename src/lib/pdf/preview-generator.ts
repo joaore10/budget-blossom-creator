@@ -32,10 +32,10 @@ export const generatePreviewHTML = (
       items,
       budget.data_criacao,
       {
-        razao_social: company.razao_social,
-        telefone: company.telefone,
-        email: company.email,
-        logo: company.logo
+        razao_social: company.razao_social || company.nome, // Fallback to nome if razao_social is not provided
+        telefone: company.telefone || '',
+        email: company.email || '',
+        logo: company.logo || ''
       }
     );
   } catch (error) {

@@ -70,11 +70,18 @@ const PdfPreview = ({ html, className = '' }: PdfPreviewProps) => {
     { name: 'ITENS_CUSTOM', description: 'Permite acesso aos itens individuais para personalização (use em loop JS)' }
   ];
 
+  // Handle the variables button click
+  const handleVariablesButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
+    setShowVariables(!showVariables);
+  };
+
   return (
     <Card className={`overflow-hidden ${className}`}>
       <div className="flex flex-col gap-4">
         <button 
-          onClick={() => setShowVariables(!showVariables)}
+          onClick={handleVariablesButtonClick}
+          type="button" // Explicitly set type to button to prevent form submission
           className="p-2 text-sm text-blue-600 hover:text-blue-800 underline self-end mr-4 mt-2"
         >
           {showVariables ? 'Ocultar' : 'Mostrar'} variáveis disponíveis
