@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useData } from "@/contexts/DataContext";
@@ -30,6 +29,7 @@ const BudgetsPage = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedBudgetAlternatives, setSelectedBudgetAlternatives] = useState<string | null>(null);
   const [localAlternativeBudgets, setLocalAlternativeBudgets] = useState<AlternativeBudget[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     let sorted = [...budgets].sort((a, b) => {
@@ -56,11 +56,20 @@ const BudgetsPage = () => {
     setDeleteConfirmOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (budgetToDelete) {
-      deleteBudget(budgetToDelete);
-      setDeleteConfirmOpen(false);
-      setBudgetToDelete(null);
+      try {
+        setIsDeleting(true);
+        await deleteBudget(budgetToDelete);
+        toast.success("Orçamento excluído com sucesso");
+      } catch (error) {
+        console.error("Erro ao excluir orçamento:", error);
+        toast.error("Erro ao excluir orçamento");
+      } finally {
+        setIsDeleting(false);
+        setDeleteConfirmOpen(false);
+        setBudgetToDelete(null);
+      }
     }
   };
 
@@ -190,6 +199,7 @@ const BudgetsPage = () => {
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         onConfirm={confirmDelete}
+        isDeleting={isDeleting}
       />
 
       {selectedBudgetAlternatives && (

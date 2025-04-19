@@ -13,12 +13,14 @@ interface DeleteConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
+  isDeleting?: boolean;
 }
 
 const DeleteConfirmDialog = ({
   open,
   onOpenChange,
   onConfirm,
+  isDeleting = false,
 }: DeleteConfirmDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -34,11 +36,16 @@ const DeleteConfirmDialog = ({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
+            disabled={isDeleting}
           >
             Cancelar
           </Button>
-          <Button variant="destructive" onClick={onConfirm}>
-            Excluir
+          <Button 
+            variant="destructive" 
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Excluindo...' : 'Excluir'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { Company } from "@/types";
+import { dbService } from "@/services/DatabaseService";
 
 const sampleCompanies = [
   {
@@ -25,18 +24,13 @@ const sampleCompanies = [
 
 export async function seedInitialCompanies() {
   try {
-    const { error } = await supabase
-      .from('companies')
-      .insert(sampleCompanies);
-
-    if (error) {
-      console.error('Error seeding companies:', error);
-      throw error;
+    // Usamos o dbService em vez do supabase para compatibilidade local
+    for (const company of sampleCompanies) {
+      await dbService.createCompany(company);
     }
-
     console.log('Companies seeded successfully');
   } catch (error) {
-    console.error('Failed to seed companies:', error);
+    console.error('Error seeding companies:', error);
     throw error;
   }
 }
