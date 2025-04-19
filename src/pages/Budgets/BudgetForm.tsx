@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -25,6 +26,19 @@ import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { generatePDF } from "@/lib/pdf/document-generator";
+
+const unidadeOptions = [
+  "UNIDADE",
+  "PACOTE",
+  "CAIXA",
+  "METRO",
+  "METRO²",
+  "METRO³",
+  "LITRO",
+  "HORA",
+  "DIÁRIA",
+  "KG",
+];
 
 const BudgetForm = () => {
   const { id } = useParams();
@@ -55,7 +69,10 @@ const BudgetForm = () => {
           cliente: budget.cliente,
           empresa_base_id: budget.empresa_base_id,
           empresas_selecionadas_ids: [...budget.empresas_selecionadas_ids],
-          itens: budget.itens.map((item) => ({ ...item })),
+          itens: budget.itens.map((item) => ({ 
+            ...item, 
+            unidade: item.unidade || "UNIDADE" 
+          })),
         });
       } else {
         toast.error("Orçamento não encontrado");
@@ -119,6 +136,7 @@ const BudgetForm = () => {
       quantidade: 1,
       valor_unitario: 0,
       observacao: "",
+      unidade: "UNIDADE",
     };
 
     setFormData((prev) => ({
@@ -139,7 +157,12 @@ const BudgetForm = () => {
           if (field === "quantidade") {
             return { ...item, [field]: parseInt(value as string) || 0 };
           } else if (field === "valor_unitario") {
-            return { ...item, [field]: parseFloat(value as string) || 0 };
+            // Converter valor com vírgula para ponto antes de processar
+            let processedValue = value;
+            if (typeof value === "string") {
+              processedValue = value.replace(",", ".");
+            }
+            return { ...item, [field]: parseFloat(processedValue as string) || 0 };
           }
           return { ...item, [field]: value };
         }
@@ -273,6 +296,11 @@ const BudgetForm = () => {
     } else {
       toast.error("Salve o orçamento antes de gerar o PDF");
     }
+  };
+
+  // Formata o valor para exibição com vírgula
+  const formatValorUnitario = (valor: number) => {
+    return valor.toString().replace(".", ",");
   };
 
   return (
@@ -450,14 +478,33 @@ const BudgetForm = () => {
 
                           <div className="space-y-2">
                             <Label htmlFor={`item-unit-${item.id}`}>
+                              Unidade
+                            </Label>
+                            <Select
+                              value={item.unidade || "UNIDADE"}
+                              onValueChange={(value) => updateItem(item.id, "unidade", value)}
+                            >
+                              <SelectTrigger id={`item-unit-type-${item.id}`} className="bg-gray-50 border-0">
+                                <SelectValue placeholder="Selecione a unidade" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {unidadeOptions.map((unidade) => (
+                                  <SelectItem key={unidade} value={unidade}>
+                                    {unidade}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`item-unit-price-${item.id}`}>
                               Valor Unitário
                             </Label>
                             <Input
-                              id={`item-unit-${item.id}`}
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={item.valor_unitario}
+                              id={`item-unit-price-${item.id}`}
+                              type="text"
+                              value={formatValorUnitario(item.valor_unitario)}
                               onChange={(e) =>
                                 updateItem(item.id, "valor_unitario", e.target.value)
                               }

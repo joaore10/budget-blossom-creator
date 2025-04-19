@@ -173,27 +173,32 @@ class DatabaseService {
     if (!this.db) throw new Error('Banco de dados não inicializado');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['budgets', 'alternativeBudgets'], 'readwrite');
-      const budgetStore = transaction.objectStore('budgets');
-      const altBudgetStore = transaction.objectStore('alternativeBudgets');
-      
-      // Primeiro, busca todos os orçamentos alternativos para excluir
-      const getAltBudgets = this.getAlternativeBudgets(id);
-      
-      getAltBudgets.then(altBudgets => {
-        // Exclui cada orçamento alternativo
-        altBudgets.forEach(altBudget => {
-          altBudgetStore.delete(altBudget.id);
+      try {
+        const transaction = this.db!.transaction(['budgets', 'alternativeBudgets'], 'readwrite');
+        const budgetStore = transaction.objectStore('budgets');
+        const altBudgetStore = transaction.objectStore('alternativeBudgets');
+        
+        // Primeiro, busca todos os orçamentos alternativos
+        this.getAlternativeBudgets(id).then(altBudgets => {
+          // Exclui cada orçamento alternativo
+          altBudgets.forEach(altBudget => {
+            const deleteAltRequest = altBudgetStore.delete(altBudget.id);
+            deleteAltRequest.onerror = () => {
+              console.error(`Erro ao excluir orçamento alternativo ${altBudget.id}`);
+            };
+          });
+          
+          // Então exclui o orçamento principal
+          const deleteRequest = budgetStore.delete(id);
+          
+          deleteRequest.onsuccess = () => resolve();
+          deleteRequest.onerror = () => reject(new Error(`Erro ao excluir orçamento ${id}`));
+        }).catch(error => {
+          reject(error);
         });
-        
-        // Então exclui o orçamento principal
-        const deleteRequest = budgetStore.delete(id);
-        
-        deleteRequest.onsuccess = () => resolve();
-        deleteRequest.onerror = () => reject(new Error(`Erro ao excluir orçamento ${id}`));
-      }).catch(error => {
+      } catch (error) {
         reject(error);
-      });
+      }
     });
   }
 
@@ -228,6 +233,26 @@ class DatabaseService {
       
       request.onsuccess = () => resolve(id);
       request.onerror = () => reject(new Error('Erro ao criar orçamento alternativo'));
+    });
+  }
+
+  async updateAlternativeBudget(altBudget: AlternativeBudget): Promise<void> {
+    const store = await this.getStore('alternativeBudgets', 'readwrite');
+    return new Promise((resolve, reject) => {
+      const request = store.put(altBudget);
+      
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(new Error(`Erro ao atualizar orçamento alternativo ${altBudget.id}`));
+    });
+  }
+
+  async deleteAlternativeBudget(id: string): Promise<void> {
+    const store = await this.getStore('alternativeBudgets', 'readwrite');
+    return new Promise((resolve, reject) => {
+      const request = store.delete(id);
+      
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(new Error(`Erro ao excluir orçamento alternativo ${id}`));
     });
   }
 }

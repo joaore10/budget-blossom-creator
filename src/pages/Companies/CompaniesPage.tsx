@@ -1,56 +1,162 @@
 
-import { useNavigate } from "react-router-dom";
-import { useData } from "@/contexts/DataContext";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
+import { useData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const CompaniesPage = () => {
+  const { companies, deleteCompany } = useData();
   const navigate = useNavigate();
-  const { companies } = useData();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [companyToDelete, setCompanyToDelete] = useState<string | null>(null);
+  const [filteredCompanies, setFilteredCompanies] = useState(companies);
+
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredCompanies(
+        companies.filter((company) =>
+          company.nome.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredCompanies(companies);
+    }
+  }, [searchTerm, companies]);
+
+  const handleDeleteClick = (companyId: string) => {
+    setCompanyToDelete(companyId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (companyToDelete) {
+      try {
+        await deleteCompany(companyToDelete);
+        setDeleteConfirmOpen(false);
+        setCompanyToDelete(null);
+      } catch (error) {
+        console.error(error);
+        toast.error("Não foi possível excluir a empresa");
+      }
+    }
+  };
 
   return (
     <Layout>
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold">Empresas</h1>
-          <Button onClick={() => navigate("/empresas/nova")}>
-            <Plus className="mr-2 h-4 w-4" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Empresas</h1>
+            <p className="text-sm text-muted-foreground">
+              Gerenciamento de empresas do sistema
+            </p>
+          </div>
+          <Button onClick={() => navigate("/empresas/nova")} className="bg-primary hover:bg-primary/90">
+            <Plus className="h-4 w-4 mr-2" />
             Nova Empresa
           </Button>
         </div>
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>CNPJ</TableHead>
-                <TableHead>Representante</TableHead>
-                <TableHead>Endereço</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {companies.map((company) => (
-                <TableRow
-                  key={company.id}
-                  className="cursor-pointer hover:bg-muted"
-                  onClick={() => navigate(`/empresas/editar/${company.id}`)}
-                >
-                  <TableCell>{company.nome}</TableCell>
-                  <TableCell>{company.cnpj}</TableCell>
-                  <TableCell>{company.representante}</TableCell>
-                  <TableCell>{company.endereco}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle>Lista de Empresas</CardTitle>
+            <CardDescription>
+              Total de {filteredCompanies.length} empresas cadastradas
+            </CardDescription>
+            <div className="flex items-center py-2">
+              <input
+                type="text"
+                placeholder="Buscar empresa..."
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader className="bg-gray-50">
+                  <TableRow>
+                    <TableHead className="font-semibold">Nome</TableHead>
+                    <TableHead className="font-semibold">CNPJ</TableHead>
+                    <TableHead className="font-semibold">Representante</TableHead>
+                    <TableHead className="font-semibold">Endereço</TableHead>
+                    <TableHead className="text-right font-semibold w-[100px]">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCompanies.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                        Nenhuma empresa encontrada
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredCompanies.map((company) => (
+                      <TableRow key={company.id} className="hover:bg-gray-50">
+                        <TableCell className="font-medium">{company.nome}</TableCell>
+                        <TableCell>{company.cnpj}</TableCell>
+                        <TableCell>{company.representante}</TableCell>
+                        <TableCell className="max-w-[250px] truncate" title={company.endereco}>
+                          {company.endereco}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => navigate(`/empresas/editar/${company.id}`)}
+                              className="h-8 w-8"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteClick(company.id)}
+                              className="h-8 w-8 hover:text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {deleteConfirmOpen && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-semibold mb-4">Confirmar exclusão</h2>
+              <p className="mb-6">
+                Esta ação não pode ser desfeita. Tem certeza que deseja excluir esta empresa?
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button variant="destructive" onClick={confirmDelete}>
+                  Excluir
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
 };
 
 export default CompaniesPage;
-

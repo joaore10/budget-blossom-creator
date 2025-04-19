@@ -126,8 +126,12 @@ export function useBudgets() {
       );
 
       const newIds: string[] = [];
+      const existingAlts = await dbService.getAlternativeBudgets(budgetId);
 
       for (const companyId of otherCompanyIds) {
+        // Verifica se já existe um orçamento alternativo para esta empresa
+        const existingAlt = existingAlts.find(alt => alt.empresa_id === companyId);
+        
         const alternativeItems = budget.itens.map((item) => {
           const increasePercentage = 5 + Math.random() * 15;
           const increaseFactor = 1 + increasePercentage / 100;
@@ -139,14 +143,31 @@ export function useBudgets() {
           };
         });
 
-        const newAltBudget: Omit<AlternativeBudget, "id"> = {
-          orcamento_id: budgetId,
-          empresa_id: companyId,
-          itens_com_valores_alterados: alternativeItems,
-        };
+        if (existingAlt) {
+          // Atualiza o orçamento alternativo existente
+          await dbService.updateAlternativeBudget({
+            ...existingAlt,
+            itens_com_valores_alterados: alternativeItems,
+          });
+          newIds.push(existingAlt.id);
+        } else {
+          // Cria um novo orçamento alternativo
+          const newAltBudget: Omit<AlternativeBudget, "id"> = {
+            orcamento_id: budgetId,
+            empresa_id: companyId,
+            itens_com_valores_alterados: alternativeItems,
+          };
 
-        const id = await dbService.createAlternativeBudget(newAltBudget);
-        newIds.push(id);
+          const id = await dbService.createAlternativeBudget(newAltBudget);
+          newIds.push(id);
+        }
+      }
+
+      // Remove orçamentos alternativos de empresas que não estão mais selecionadas
+      for (const existingAlt of existingAlts) {
+        if (!otherCompanyIds.includes(existingAlt.empresa_id)) {
+          await dbService.deleteAlternativeBudget(existingAlt.id);
+        }
       }
 
       // Atualiza a lista de orçamentos alternativos
@@ -157,7 +178,7 @@ export function useBudgets() {
       ]);
 
       if (newIds.length > 0) {
-        toast.success(`${newIds.length} orçamentos alternativos gerados`);
+        toast.success(`${newIds.length} orçamentos alternativos atualizados`);
       } else {
         toast.info('Nenhuma empresa adicional selecionada para gerar orçamentos alternativos');
       }
