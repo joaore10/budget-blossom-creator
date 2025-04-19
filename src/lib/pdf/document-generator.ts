@@ -10,7 +10,7 @@ export const generatePDF = async (
   company: Company,
   alternativeBudget?: AlternativeBudget,
   shouldDownload: boolean = false
-) => {
+): Promise<boolean> => {
   try {
     const filledHtml = generatePreviewHTML(budget, company, alternativeBudget);
     
@@ -86,4 +86,3 @@ export const generatePDF = async (
     return false;
   }
 };
-

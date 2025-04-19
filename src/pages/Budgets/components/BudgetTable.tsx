@@ -14,7 +14,7 @@ interface BudgetTableProps {
   companies?: Company[];  // Made optional since it's not directly used in the component
   isLoading?: boolean;
   formatCurrency: (value: number) => string;
-  onGeneratePDF: (budget: Budget, company: Company, alternativeBudget: undefined, shouldDownload: boolean) => Promise<boolean>;
+  onGeneratePDF: (budget: Budget, company: Company, alternativeBudget: AlternativeBudget | undefined, shouldDownload: boolean) => Promise<void>;
   onDelete: (id: string) => void;
   onOpenAlternatives?: (budgetId: string) => void;
   onGenerateAlternatives?: (budgetId: string) => void;
