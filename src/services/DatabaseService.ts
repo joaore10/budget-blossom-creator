@@ -1,4 +1,3 @@
-
 import { Company, Budget, AlternativeBudget, BudgetItem } from '@/types';
 
 // Interface para facilitar o gerenciamento das stores do IndexedDB
@@ -168,7 +167,7 @@ class DatabaseService {
   }
 
   async deleteBudget(id: string): Promise<void> {
-    // Transação para excluir o orçamento e seus orçamentos alternativos
+    // Ensure the database is initialized
     await this.initDB();
     if (!this.db) throw new Error('Banco de dados não inicializado');
 
@@ -178,25 +177,57 @@ class DatabaseService {
         const budgetStore = transaction.objectStore('budgets');
         const altBudgetStore = transaction.objectStore('alternativeBudgets');
         
-        // Primeiro, busca todos os orçamentos alternativos
+        // This will hold our batch operations
+        const operations: Promise<any>[] = [];
+        
+        // First, get all alternative budgets for this budget
         this.getAlternativeBudgets(id).then(altBudgets => {
-          // Exclui cada orçamento alternativo
+          // Delete each alternative budget
           altBudgets.forEach(altBudget => {
-            const deleteAltRequest = altBudgetStore.delete(altBudget.id);
-            deleteAltRequest.onerror = () => {
-              console.error(`Erro ao excluir orçamento alternativo ${altBudget.id}`);
-            };
+            operations.push(
+              new Promise((resolveAlt, rejectAlt) => {
+                const deleteAltRequest = altBudgetStore.delete(altBudget.id);
+                deleteAltRequest.onerror = () => {
+                  console.error(`Erro ao excluir orçamento alternativo ${altBudget.id}`);
+                  rejectAlt(new Error(`Erro ao excluir orçamento alternativo ${altBudget.id}`));
+                };
+                deleteAltRequest.onsuccess = () => resolveAlt(null);
+              })
+            );
           });
           
-          // Então exclui o orçamento principal
-          const deleteRequest = budgetStore.delete(id);
+          // Add operation to delete the main budget
+          operations.push(
+            new Promise((resolveBudget, rejectBudget) => {
+              const deleteRequest = budgetStore.delete(id);
+              deleteRequest.onerror = () => {
+                console.error(`Erro ao excluir orçamento ${id}`);
+                rejectBudget(new Error(`Erro ao excluir orçamento ${id}`));
+              };
+              deleteRequest.onsuccess = () => resolveBudget(null);
+            })
+          );
           
-          deleteRequest.onsuccess = () => resolve();
-          deleteRequest.onerror = () => reject(new Error(`Erro ao excluir orçamento ${id}`));
+          // Wait for all operations to complete
+          Promise.all(operations)
+            .then(() => {
+              resolve();
+            })
+            .catch(error => {
+              reject(error);
+            });
         }).catch(error => {
           reject(error);
         });
+        
+        // Add transaction error handling
+        transaction.onerror = (event) => {
+          console.error('Transação falhou:', event);
+          reject(new Error('A transação de exclusão falhou'));
+        };
+        
       } catch (error) {
+        console.error('Erro ao iniciar transação:', error);
         reject(error);
       }
     });

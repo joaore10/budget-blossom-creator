@@ -8,11 +8,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface DeleteConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
   isDeleting?: boolean;
 }
 
@@ -22,6 +24,24 @@ const DeleteConfirmDialog = ({
   onConfirm,
   isDeleting = false,
 }: DeleteConfirmDialogProps) => {
+  const [internalIsDeleting, setInternalIsDeleting] = useState(false);
+
+  const handleConfirm = async () => {
+    setInternalIsDeleting(true);
+    try {
+      await onConfirm();
+      toast.success("Orçamento excluído com sucesso");
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Erro ao excluir orçamento:", error);
+      toast.error("Erro ao excluir orçamento");
+    } finally {
+      setInternalIsDeleting(false);
+    }
+  };
+
+  const isProcessing = isDeleting || internalIsDeleting;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -36,16 +56,16 @@ const DeleteConfirmDialog = ({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
+            disabled={isProcessing}
           >
             Cancelar
           </Button>
           <Button 
             variant="destructive" 
-            onClick={onConfirm}
-            disabled={isDeleting}
+            onClick={handleConfirm}
+            disabled={isProcessing}
           >
-            {isDeleting ? 'Excluindo...' : 'Excluir'}
+            {isProcessing ? 'Excluindo...' : 'Excluir'}
           </Button>
         </DialogFooter>
       </DialogContent>

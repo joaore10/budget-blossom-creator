@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import Layout from "@/components/Layout";
 import BudgetTable from "./components/BudgetTable";
@@ -28,7 +27,6 @@ export default function BudgetsPage() {
   const [selectedBudgetAlternatives, setSelectedBudgetAlternatives] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [budgetIdToDelete, setBudgetIdToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [showPriceRangeDialog, setShowPriceRangeDialog] = useState(false);
   const [selectedBudgetForAlternatives, setSelectedBudgetForAlternatives] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,19 +82,13 @@ export default function BudgetsPage() {
   };
 
   const confirmDelete = async () => {
-    if (budgetIdToDelete) {
-      setIsDeleting(true);
-      try {
-        await deleteBudget(budgetIdToDelete);
-        toast.success('Orçamento excluído com sucesso');
-      } catch (error) {
-        console.error('Erro ao excluir orçamento:', error);
-        toast.error('Erro ao excluir orçamento');
-      } finally {
-        setIsDeleting(false);
-        setIsDeleteDialogOpen(false);
-        setBudgetIdToDelete(null);
-      }
+    if (!budgetIdToDelete) return;
+    
+    try {
+      await deleteBudget(budgetIdToDelete);
+      setBudgetIdToDelete(null);
+    } catch (error) {
+      console.error('Erro ao excluir orçamento:', error);
     }
   };
 
@@ -108,7 +100,6 @@ export default function BudgetsPage() {
     setSelectedBudgetAlternatives(null);
   };
 
-  // Esta é a função que deve ser chamada para iniciar a geração de orçamentos alternativos
   const handleGenerateAlternatives = (budgetId: string) => {
     setSelectedBudgetForAlternatives(budgetId);
     setShowPriceRangeDialog(true);
@@ -214,7 +205,6 @@ export default function BudgetsPage() {
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
           onConfirm={confirmDelete}
-          isDeleting={isDeleting}
         />
       </div>
     </Layout>

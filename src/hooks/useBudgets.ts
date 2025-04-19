@@ -68,15 +68,16 @@ export function useBudgets() {
 
   const deleteBudget = useCallback(async (id: string): Promise<void> => {
     try {
+      const altBudgets = await dbService.getAlternativeBudgets(id);
+      
       await dbService.deleteBudget(id);
+      
       setBudgets(prev => prev.filter(b => b.id !== id));
       setAlternativeBudgets(prev => 
         prev.filter(ab => ab.orcamento_id !== id)
       );
-      toast.success('Orçamento excluído com sucesso');
     } catch (error) {
       console.error('Erro ao excluir orçamento:', error);
-      toast.error('Erro ao excluir orçamento');
       throw error;
     }
   }, []);
@@ -132,11 +133,9 @@ export function useBudgets() {
       const existingAlts = await dbService.getAlternativeBudgets(budgetId);
 
       for (const companyId of otherCompanyIds) {
-        // Verifica se já existe um orçamento alternativo para esta empresa
         const existingAlt = existingAlts.find(alt => alt.empresa_id === companyId);
         
         const alternativeItems = budget.itens.map((item) => {
-          // Gera um aumento aleatório entre 1% e maxRange% para cada item
           const increasePercentage = 1 + Math.random() * (maxRange - 1);
           const increaseFactor = 1 + increasePercentage / 100;
           
@@ -148,14 +147,12 @@ export function useBudgets() {
         });
 
         if (existingAlt) {
-          // Atualiza o orçamento alternativo existente
           await dbService.updateAlternativeBudget({
             ...existingAlt,
             itens_com_valores_alterados: alternativeItems,
           });
           newIds.push(existingAlt.id);
         } else {
-          // Cria um novo orçamento alternativo
           const newAltBudget: Omit<AlternativeBudget, "id"> = {
             orcamento_id: budgetId,
             empresa_id: companyId,
@@ -167,14 +164,12 @@ export function useBudgets() {
         }
       }
 
-      // Remove orçamentos alternativos de empresas que não estão mais selecionadas
       for (const existingAlt of existingAlts) {
         if (!otherCompanyIds.includes(existingAlt.empresa_id)) {
           await dbService.deleteAlternativeBudget(existingAlt.id);
         }
       }
 
-      // Atualiza a lista de orçamentos alternativos
       const updatedAlternatives = await dbService.getAlternativeBudgets(budgetId);
       setAlternativeBudgets(prev => [
         ...prev.filter(ab => ab.orcamento_id !== budgetId),
