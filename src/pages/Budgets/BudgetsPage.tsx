@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Layout } from "@/components/Layout"
-import { BudgetTable } from "./components/BudgetTable";
+import Layout from "@/components/Layout";
+import BudgetTable from "./components/BudgetTable";
 import { Company, Budget, AlternativeBudget } from "@/types";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useBudgets } from "@/hooks/useBudgets";
@@ -34,9 +34,6 @@ export default function BudgetsPage() {
 
   useEffect(() => {
     if (budgets.length === 0) {
-      // Force a re-fetch of budgets
-      // This is a workaround to ensure budgets are re-fetched when companies are seeded
-      // and the budgets are initially empty due to the timing of the queries.
       setBudgets([]);
     }
   }, [budgets.length, setBudgets]);

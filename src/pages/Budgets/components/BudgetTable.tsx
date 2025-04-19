@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Budget } from "@/types";
 import { Button } from "@/components/ui/button";
