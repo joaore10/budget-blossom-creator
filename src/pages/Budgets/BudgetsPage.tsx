@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import Layout from "@/components/Layout";
 import BudgetTable from "./components/BudgetTable";
@@ -107,7 +108,8 @@ export default function BudgetsPage() {
     setSelectedBudgetAlternatives(null);
   };
 
-  const handleGenerateAlternatives = async (budgetId: string) => {
+  // Esta é a função que deve ser chamada para iniciar a geração de orçamentos alternativos
+  const handleGenerateAlternatives = (budgetId: string) => {
     setSelectedBudgetForAlternatives(budgetId);
     setShowPriceRangeDialog(true);
   };
@@ -116,10 +118,12 @@ export default function BudgetsPage() {
     if (selectedBudgetForAlternatives) {
       try {
         await generateAlternativeBudgets(selectedBudgetForAlternatives, range);
+        toast.success('Orçamentos alternativos gerados com sucesso!');
         setShowPriceRangeDialog(false);
         setSelectedBudgetForAlternatives(null);
       } catch (error) {
         console.error('Erro ao gerar orçamentos alternativos:', error);
+        toast.error('Erro ao gerar orçamentos alternativos');
       }
     }
   };

@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Budget, Company, AlternativeBudget } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -107,7 +108,7 @@ const BudgetTable = ({
                     onGeneratePDF(budget, company as Company, undefined, true);
                   }
                 }}
-                title="Gerar PDF"
+                title="Baixar PDF"
               >
                 <FileText className="h-4 w-4" />
               </Button>
@@ -129,7 +130,11 @@ const BudgetTable = ({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 hover:bg-muted hover:text-primary transition-colors"
-                  onClick={() => onGenerateAlternatives(budget.id)}
+                  onClick={() => {
+                    if (onGenerateAlternatives) {
+                      onGenerateAlternatives(budget.id);
+                    }
+                  }}
                   title="Gerar alternativas"
                 >
                   <BarChart className="h-4 w-4" />

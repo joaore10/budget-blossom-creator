@@ -123,6 +123,11 @@ export function useBudgets() {
         (id) => id !== baseCompanyId
       );
 
+      if (otherCompanyIds.length === 0) {
+        toast.info('Nenhuma empresa adicional selecionada para gerar orçamentos alternativos');
+        return [];
+      }
+
       const newIds: string[] = [];
       const existingAlts = await dbService.getAlternativeBudgets(budgetId);
 
@@ -177,9 +182,7 @@ export function useBudgets() {
       ]);
 
       if (newIds.length > 0) {
-        toast.success(`${newIds.length} orçamentos alternativos atualizados`);
-      } else {
-        toast.info('Nenhuma empresa adicional selecionada para gerar orçamentos alternativos');
+        toast.success(`${newIds.length} orçamentos alternativos gerados`);
       }
 
       return newIds;
