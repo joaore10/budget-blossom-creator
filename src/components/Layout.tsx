@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -20,7 +19,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   const isActive = (path: string) => {
-    // Verificações exatas para rotas específicas
     if (path === "/" && location.pathname === "/") return true;
     if (path === "/empresas" && (location.pathname === "/empresas" || location.pathname.startsWith("/empresas/"))) return true;
     if (path === "/orcamentos" && location.pathname === "/orcamentos") return true;
@@ -46,8 +44,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Sidebar - desktop visible, mobile toggleable */}
       <aside 
         className={cn(
-          "bg-budget-700 text-white w-64 flex flex-col transition-transform duration-300 ease-in-out",
-          "fixed md:static h-full z-40",
+          "bg-budget-700 text-white w-64 flex flex-col min-h-screen",
+          "fixed md:sticky top-0 z-40",
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
@@ -93,7 +91,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto md:ml-0 pt-16 md:pt-0">
+      <main className="flex-1 overflow-auto md:ml-0">
         <div className="container mx-auto py-8 px-4 animate-fade-enter">
           {children}
         </div>
