@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import Layout from "@/components/Layout";
 import BudgetTable from "./components/BudgetTable";
@@ -10,6 +9,7 @@ import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { generatePDF } from "@/lib/pdf";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import AlternativeBudgetsDialog from './components/AlternativeBudgetsDialog';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import AlternativePriceRangeDialog from './components/AlternativePriceRangeDialog';
@@ -30,6 +30,8 @@ export default function BudgetsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showPriceRangeDialog, setShowPriceRangeDialog] = useState(false);
   const [selectedBudgetForAlternatives, setSelectedBudgetForAlternatives] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredBudgets, setFilteredBudgets] = useState(budgets);
 
   const isLoading = isLoadingCompanies || isLoadingBudgets;
 
@@ -38,6 +40,19 @@ export default function BudgetsPage() {
       setBudgets([]);
     }
   }, [budgets.length, setBudgets]);
+
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredBudgets(
+        budgets.filter((budget) =>
+          budget.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          getCompanyById(budget.empresa_base_id)?.nome.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredBudgets(budgets);
+    }
+  }, [searchTerm, budgets, getCompanyById]);
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', {
@@ -111,45 +126,69 @@ export default function BudgetsPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto py-10">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Orçamentos</h1>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Orçamentos</h1>
+            <p className="text-sm text-muted-foreground">
+              Gerenciamento de orçamentos do sistema
+            </p>
+          </div>
           <Link to="/orcamentos/novo">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="bg-primary hover:bg-primary/90">
+              <Plus className="h-4 w-4 mr-2" />
               Novo Orçamento
             </Button>
           </Link>
         </div>
 
-        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-center">
-              <thead className="bg-muted/40">
-                <tr>
-                  <th className="text-center p-4 font-medium text-muted-foreground">Cliente</th>
-                  <th className="text-center p-4 font-medium text-muted-foreground">Empresa</th>
-                  <th className="text-center p-4 font-medium text-muted-foreground">Data</th>
-                  <th className="text-center p-4 font-medium text-muted-foreground">Status</th>
-                  <th className="text-center p-4 font-medium text-muted-foreground">Valor</th>
-                  <th className="text-center p-4 font-medium text-muted-foreground">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <BudgetTable
-                  budgets={budgets}
-                  companies={companies}
-                  isLoading={isLoading}
-                  formatCurrency={formatCurrency}
-                  onGeneratePDF={handleGeneratePDF}
-                  onDelete={handleDelete}
-                  onOpenAlternatives={handleOpenAlternatives}
-                  onGenerateAlternatives={handleGenerateAlternatives}
-                />
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle>Lista de Orçamentos</CardTitle>
+            <CardDescription>
+              Total de {filteredBudgets.length} orçamentos cadastrados
+            </CardDescription>
+            <div className="flex items-center py-2">
+              <input
+                type="text"
+                placeholder="Buscar orçamento..."
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <div className="relative w-full overflow-auto">
+                <table className="w-full caption-bottom text-sm">
+                  <thead className="bg-muted/40">
+                    <tr>
+                      <th className="text-center p-4 font-medium text-muted-foreground">Cliente</th>
+                      <th className="text-center p-4 font-medium text-muted-foreground">Empresa</th>
+                      <th className="text-center p-4 font-medium text-muted-foreground">Data</th>
+                      <th className="text-center p-4 font-medium text-muted-foreground">Status</th>
+                      <th className="text-center p-4 font-medium text-muted-foreground">Valor</th>
+                      <th className="text-center p-4 font-medium text-muted-foreground">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <BudgetTable
+                      budgets={filteredBudgets}
+                      companies={companies}
+                      isLoading={isLoading}
+                      formatCurrency={formatCurrency}
+                      onGeneratePDF={handleGeneratePDF}
+                      onDelete={handleDelete}
+                      onOpenAlternatives={handleOpenAlternatives}
+                      onGenerateAlternatives={handleGenerateAlternatives}
+                    />
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <AlternativePriceRangeDialog
           open={showPriceRangeDialog}

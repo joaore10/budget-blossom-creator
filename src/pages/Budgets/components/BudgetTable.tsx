@@ -1,11 +1,7 @@
-
 import { Link } from "react-router-dom";
 import { Budget, Company, AlternativeBudget } from "@/types";
 import { Button } from "@/components/ui/button";
-import {
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { Edit, FileText, Eye, Trash2, AlertTriangle, BarChart } from "lucide-react";
 import BudgetStatus from "./BudgetStatus";
 
@@ -68,7 +64,7 @@ const BudgetTable = ({
         <TableCell colSpan={6} className="text-center h-24">
           <div className="flex flex-col items-center justify-center text-sm">
             <AlertTriangle className="h-10 w-10 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">Nenhum orçamento cadastrado ainda</p>
+            <p className="text-muted-foreground">Nenhum orçamento encontrado</p>
             <Button variant="link" className="mt-2" asChild>
               <Link to="/orcamentos/novo">
                 Criar novo orçamento
@@ -84,7 +80,7 @@ const BudgetTable = ({
     <>
       {budgets.map((budget) => (
         <TableRow key={budget.id} className="hover:bg-muted/50 transition-colors">
-          <TableCell className="text-center font-medium text-primary">
+          <TableCell className="text-center font-medium">
             {budget.cliente}
           </TableCell>
           <TableCell className="text-center text-muted-foreground">
@@ -102,9 +98,9 @@ const BudgetTable = ({
           <TableCell className="text-center">
             <div className="flex space-x-2 justify-center">
               <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0 border-muted hover:bg-muted hover:text-primary transition-colors"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-muted hover:text-primary transition-colors"
                 onClick={() => {
                   const company = getCompanyById(budget.empresa_base_id);
                   if (company) {
@@ -118,9 +114,9 @@ const BudgetTable = ({
               
               {onOpenAlternatives && (
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 p-0 border-muted hover:bg-muted hover:text-primary transition-colors"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-muted hover:text-primary transition-colors"
                   onClick={() => onOpenAlternatives(budget.id)}
                   title="Ver alternativas"
                 >
@@ -130,9 +126,9 @@ const BudgetTable = ({
 
               {onGenerateAlternatives && (
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 p-0 border-muted hover:bg-muted hover:text-primary transition-colors"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-muted hover:text-primary transition-colors"
                   onClick={() => onGenerateAlternatives(budget.id)}
                   title="Gerar alternativas"
                 >
@@ -141,10 +137,10 @@ const BudgetTable = ({
               )}
 
               <Button
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                size="icon"
                 asChild
-                className="h-8 w-8 p-0 border-muted hover:bg-muted hover:text-primary transition-colors"
+                className="h-8 w-8 hover:bg-muted hover:text-primary transition-colors"
                 title="Editar"
               >
                 <Link to={`/orcamentos/editar/${budget.id}`}>
@@ -153,9 +149,9 @@ const BudgetTable = ({
               </Button>
 
               <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0 border-muted hover:bg-destructive/10 hover:text-destructive transition-colors"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-colors"
                 onClick={() => onDelete(budget.id)}
                 title="Excluir"
               >
