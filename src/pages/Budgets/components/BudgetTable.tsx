@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Budget, Company, AlternativeBudget } from "@/types";
 import { Button } from "@/components/ui/button";

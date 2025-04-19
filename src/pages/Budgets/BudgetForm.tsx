@@ -156,7 +156,7 @@ const BudgetForm = () => {
           if (field === "quantidade") {
             return { ...item, [field]: parseInt(value as string) || 0 };
           } else if (field === "valor_unitario") {
-            const processedValue = (value as string).replace(",", ".");
+            let processedValue = String(value).replace(/\./g, "").replace(",", ".");
             return { ...item, [field]: parseFloat(processedValue) || 0 };
           }
           return { ...item, [field]: value };
@@ -506,6 +506,7 @@ const BudgetForm = () => {
                                 updateItem(item.id, "valor_unitario", e.target.value)
                               }
                               className="bg-gray-50 border-0"
+                              inputMode="decimal"
                             />
                           </div>
                         </div>
