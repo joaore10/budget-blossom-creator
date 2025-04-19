@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from "@/components/ui/input";
 
@@ -21,27 +20,22 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
     // Get the raw input value
     let inputValue = e.target.value;
     
-    // Replace dots with commas for consistency
-    inputValue = inputValue.replace('.', ',');
+    // Allow digits, comma and single period
+    const validInput = inputValue.replace(/[^\d,.]/g, '');
     
-    // Allow only digits and commas
-    const validInput = inputValue.replace(/[^\d,]/g, '');
+    // Set the input value without converting to number yet
+    e.target.value = validInput;
     
-    // Ensure there's only one comma
-    const parts = validInput.split(',');
-    const formattedValue = parts[0] + (parts.length > 1 ? ',' + parts.slice(1).join('') : '');
-    
-    // Update the display value directly without parsing
-    e.target.value = formattedValue;
-    
-    // Only convert when we need to update the parent component
-    const numericValue = formattedValue.replace(',', '.');
-    const parsedValue = parseFloat(numericValue);
-    
-    // If it's a valid number, call the onChange handler
-    if (!isNaN(parsedValue)) {
-      onChange(parsedValue);
-    } else if (formattedValue === '') {
+    // Only convert to number when needed for parent component
+    // Replace comma with period for proper JS number parsing
+    if (validInput) {
+      const numericValue = validInput.replace(',', '.');
+      const parsedValue = parseFloat(numericValue);
+      
+      if (!isNaN(parsedValue)) {
+        onChange(parsedValue);
+      }
+    } else {
       onChange(0);
     }
   };
@@ -50,28 +44,28 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     
-    if (inputValue === '') {
+    if (!inputValue || inputValue === '') {
       e.target.value = '';
       onChange(0);
       return;
     }
     
     try {
+      // Replace comma with period for JS number parsing
       const numericValue = inputValue.replace(',', '.');
       const parsedValue = parseFloat(numericValue);
       
       if (!isNaN(parsedValue)) {
-        // Format with 2 decimal places on blur
-        const formatted = parsedValue.toLocaleString('pt-BR', { 
-          minimumFractionDigits: 2, 
-          maximumFractionDigits: 2 
-        });
-        e.target.value = formatted;
+        // Just keep the value as is, with comma as decimal separator if present
+        const formattedValue = parsedValue.toString().replace('.', ',');
+        e.target.value = formattedValue;
+        onChange(parsedValue);
       } else {
         e.target.value = '';
         onChange(0);
       }
     } catch (e) {
+      e.target.value = '';
       onChange(0);
     }
   };
