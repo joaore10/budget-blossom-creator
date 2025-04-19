@@ -1,3 +1,4 @@
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -39,6 +40,33 @@ npm run dev
 ```
 http://localhost:5173
 ```
+
+### Compilando para Produção
+
+Para compilar o projeto para produção, siga estes passos:
+
+1. Limpar a pasta `dist` anterior (opcional):
+```sh
+rm -rf dist
+```
+
+2. Compilar o projeto:
+```sh
+npm run build
+```
+
+3. Após a compilação, a pasta `dist` conterá todos os arquivos necessários para deploy.
+
+4. Para testar a versão compilada localmente:
+```sh
+npm run preview
+```
+
+5. Para deploy no XAMPP:
+   - Copie todo o conteúdo da pasta `dist` para sua pasta `htdocs/seu-projeto`
+   - Acesse via `http://localhost/seu-projeto`
+   
+> **Dica**: Se enfrentar problemas com cache do navegador, pressione Ctrl+F5 para forçar um refresh completo, ou abra no modo anônimo/privado.
 
 ### Persistência de Dados
 
