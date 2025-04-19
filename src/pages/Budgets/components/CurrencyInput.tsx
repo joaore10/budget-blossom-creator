@@ -14,38 +14,46 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
   className,
   ...props 
 }) => {
-  // Format the initial value to display properly
+  // Format the initial value to display properly with comma
   const displayValue = value === 0 ? '' : value.toString().replace('.', ',');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     
-    // Allow digits, comma and control the format
+    // Allow any input with digits and only one comma
     const regex = /^[0-9]*,?[0-9]*$/;
     
     if (regex.test(inputValue) || inputValue === '') {
-      // Update the input field directly
-      if (inputValue === ',') {
-        // If user only entered a comma, allow it but don't convert yet
-        e.target.value = inputValue;
-        return;
-      }
+      // Just store the input value as is
+      e.target.value = inputValue;
       
       if (inputValue === '') {
         onChange(0);
         return;
       }
       
-      // Convert for numeric processing
-      const numericValue = inputValue.replace(',', '.');
-      const parsedValue = parseFloat(numericValue);
+      if (inputValue === ',') {
+        // Allow comma input without conversion
+        return;
+      }
       
-      if (!isNaN(parsedValue)) {
-        onChange(parsedValue);
+      // Only convert to number when submitting the value
+      if (inputValue.includes(',')) {
+        const numericValue = parseFloat(inputValue.replace(',', '.'));
+        if (!isNaN(numericValue)) {
+          onChange(numericValue);
+        }
+      } else {
+        // If no comma, it's a whole number
+        const numericValue = parseFloat(inputValue);
+        if (!isNaN(numericValue)) {
+          onChange(numericValue);
+        }
       }
     }
   };
 
+  // On blur, ensure the value is properly formatted
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     
@@ -55,18 +63,17 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
       return;
     }
     
-    // Convert comma to period for JavaScript parsing
-    const numericValue = inputValue.replace(',', '.');
-    const parsedValue = parseFloat(numericValue);
-    
-    if (!isNaN(parsedValue)) {
-      // Format the value with comma as decimal separator
-      const formattedValue = parsedValue.toString().replace('.', ',');
-      e.target.value = formattedValue;
-      onChange(parsedValue);
+    // Preserve the exact format but store as number
+    if (inputValue.includes(',')) {
+      const numericValue = parseFloat(inputValue.replace(',', '.'));
+      if (!isNaN(numericValue)) {
+        onChange(numericValue);
+      }
     } else {
-      e.target.value = '';
-      onChange(0);
+      const numericValue = parseFloat(inputValue);
+      if (!isNaN(numericValue)) {
+        onChange(numericValue);
+      }
     }
   };
 
