@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -157,7 +158,11 @@ const BudgetForm = () => {
           if (field === "quantidade") {
             return { ...item, [field]: parseInt(value as string) || 0 };
           } else if (field === "valor_unitario") {
-            return { ...item, [field]: value };
+            // Ensure valor_unitario is always a number
+            const numericValue = typeof value === 'string' 
+              ? parseFloat(value) || 0 
+              : value;
+            return { ...item, [field]: numericValue };
           }
           return { ...item, [field]: value };
         }
