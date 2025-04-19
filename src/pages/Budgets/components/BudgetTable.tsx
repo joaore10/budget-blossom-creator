@@ -6,12 +6,12 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { Edit, FileText, Eye, Trash2, AlertTriangle } from "lucide-react";
+import { Edit, FileText, Eye, Trash2, AlertTriangle, BarChart } from "lucide-react";
 import BudgetStatus from "./BudgetStatus";
 
 interface BudgetTableProps {
   budgets: Budget[];
-  companies?: Company[];  // Made optional since it's not directly used in the component
+  companies?: Company[];
   isLoading?: boolean;
   formatCurrency: (value: number) => string;
   onGeneratePDF: (budget: Budget, company: Company, alternativeBudget: AlternativeBudget | undefined, shouldDownload: boolean) => Promise<void>;
@@ -67,8 +67,8 @@ const BudgetTable = ({
       <TableRow>
         <TableCell colSpan={6} className="text-center h-24">
           <div className="flex flex-col items-center justify-center text-sm">
-            <AlertTriangle className="h-10 w-10 text-gray-400 mb-2" />
-            <p>Nenhum orçamento cadastrado ainda</p>
+            <AlertTriangle className="h-10 w-10 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">Nenhum orçamento cadastrado ainda</p>
             <Button variant="link" className="mt-2" asChild>
               <Link to="/orcamentos/novo">
                 Criar novo orçamento
@@ -83,32 +83,33 @@ const BudgetTable = ({
   return (
     <>
       {budgets.map((budget) => (
-        <TableRow key={budget.id}>
-          <TableCell className="font-medium">
+        <TableRow key={budget.id} className="hover:bg-muted/50 transition-colors">
+          <TableCell className="font-medium text-primary">
             {budget.cliente}
           </TableCell>
-          <TableCell>
+          <TableCell className="text-muted-foreground">
             {getCompanyById(budget.empresa_base_id)?.nome || "N/A"}
           </TableCell>
-          <TableCell>{formatDate(budget.data_criacao)}</TableCell>
+          <TableCell className="text-muted-foreground">{formatDate(budget.data_criacao)}</TableCell>
           <TableCell>
             <BudgetStatus creationDate={budget.data_criacao} />
           </TableCell>
-          <TableCell>
+          <TableCell className="font-medium">
             {formatCurrency(calculateTotal(budget))}
           </TableCell>
           <TableCell>
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 justify-end">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 border-muted hover:bg-muted hover:text-primary transition-colors"
                 onClick={() => {
                   const company = getCompanyById(budget.empresa_base_id);
                   if (company) {
                     onGeneratePDF(budget, company as Company, undefined, true);
                   }
                 }}
+                title="Gerar PDF"
               >
                 <FileText className="h-4 w-4" />
               </Button>
@@ -117,8 +118,9 @@ const BudgetTable = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 border-muted hover:bg-muted hover:text-primary transition-colors"
                   onClick={() => onOpenAlternatives(budget.id)}
+                  title="Ver alternativas"
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -128,10 +130,11 @@ const BudgetTable = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 border-muted hover:bg-muted hover:text-primary transition-colors"
                   onClick={() => onGenerateAlternatives(budget.id)}
+                  title="Gerar alternativas"
                 >
-                  <Eye className="h-4 w-4" />
+                  <BarChart className="h-4 w-4" />
                 </Button>
               )}
 
@@ -139,7 +142,8 @@ const BudgetTable = ({
                 variant="outline"
                 size="sm"
                 asChild
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 border-muted hover:bg-muted hover:text-primary transition-colors"
+                title="Editar"
               >
                 <Link to={`/orcamentos/editar/${budget.id}`}>
                   <Edit className="h-4 w-4" />
@@ -149,8 +153,9 @@ const BudgetTable = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 border-muted hover:bg-destructive/10 hover:text-destructive transition-colors"
                 onClick={() => onDelete(budget.id)}
+                title="Excluir"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
