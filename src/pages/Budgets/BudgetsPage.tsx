@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import Layout from "@/components/Layout";
 import BudgetTable from "./components/BudgetTable";
@@ -123,7 +124,7 @@ export default function BudgetsPage() {
 
         <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-center">
               <thead className="bg-muted/40">
                 <tr>
                   <th className="text-center p-4 font-medium text-muted-foreground">Cliente</th>
