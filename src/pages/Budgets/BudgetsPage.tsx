@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import Layout from "@/components/Layout";
 import BudgetTable from "./components/BudgetTable";
@@ -127,12 +126,12 @@ export default function BudgetsPage() {
             <table className="w-full">
               <thead className="bg-muted/40">
                 <tr>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Cliente</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Empresa</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Data</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Valor</th>
-                  <th className="text-right p-4 font-medium text-muted-foreground">Ações</th>
+                  <th className="text-center p-4 font-medium text-muted-foreground">Cliente</th>
+                  <th className="text-center p-4 font-medium text-muted-foreground">Empresa</th>
+                  <th className="text-center p-4 font-medium text-muted-foreground">Data</th>
+                  <th className="text-center p-4 font-medium text-muted-foreground">Status</th>
+                  <th className="text-center p-4 font-medium text-muted-foreground">Valor</th>
+                  <th className="text-center p-4 font-medium text-muted-foreground">Ações</th>
                 </tr>
               </thead>
               <tbody>

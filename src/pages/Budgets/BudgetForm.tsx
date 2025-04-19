@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -157,12 +156,8 @@ const BudgetForm = () => {
           if (field === "quantidade") {
             return { ...item, [field]: parseInt(value as string) || 0 };
           } else if (field === "valor_unitario") {
-            // Converter valor com vírgula para ponto antes de processar
-            let processedValue = value;
-            if (typeof value === "string") {
-              processedValue = value.replace(",", ".");
-            }
-            return { ...item, [field]: parseFloat(processedValue as string) || 0 };
+            const processedValue = (value as string).replace(",", ".");
+            return { ...item, [field]: parseFloat(processedValue) || 0 };
           }
           return { ...item, [field]: value };
         }
@@ -298,9 +293,11 @@ const BudgetForm = () => {
     }
   };
 
-  // Formata o valor para exibição com vírgula
   const formatValorUnitario = (valor: number) => {
-    return valor.toString().replace(".", ",");
+    return valor.toLocaleString('pt-BR', { 
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2 
+    });
   };
 
   return (

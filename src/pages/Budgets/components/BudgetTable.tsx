@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Budget, Company, AlternativeBudget } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -84,21 +83,23 @@ const BudgetTable = ({
     <>
       {budgets.map((budget) => (
         <TableRow key={budget.id} className="hover:bg-muted/50 transition-colors">
-          <TableCell className="font-medium text-primary">
+          <TableCell className="text-center font-medium text-primary">
             {budget.cliente}
           </TableCell>
-          <TableCell className="text-muted-foreground">
+          <TableCell className="text-center text-muted-foreground">
             {getCompanyById(budget.empresa_base_id)?.nome || "N/A"}
           </TableCell>
-          <TableCell className="text-muted-foreground">{formatDate(budget.data_criacao)}</TableCell>
-          <TableCell>
+          <TableCell className="text-center text-muted-foreground">
+            {formatDate(budget.data_criacao)}
+          </TableCell>
+          <TableCell className="text-center">
             <BudgetStatus creationDate={budget.data_criacao} />
           </TableCell>
-          <TableCell className="font-medium">
+          <TableCell className="text-center font-medium">
             {formatCurrency(calculateTotal(budget))}
           </TableCell>
-          <TableCell>
-            <div className="flex space-x-2 justify-end">
+          <TableCell className="text-center">
+            <div className="flex space-x-2 justify-center">
               <Button
                 variant="outline"
                 size="sm"
