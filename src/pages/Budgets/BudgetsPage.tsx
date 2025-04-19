@@ -114,7 +114,7 @@ export default function BudgetsPage() {
       <div className="container mx-auto py-10">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Orçamentos</h1>
-          <Link to="/budgets/new">
+          <Link to="/orcamentos/novo">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Novo Orçamento
@@ -122,16 +122,34 @@ export default function BudgetsPage() {
           </Link>
         </div>
 
-        <BudgetTable
-          budgets={budgets}
-          companies={companies}
-          isLoading={isLoading}
-          formatCurrency={formatCurrency}
-          onGeneratePDF={handleGeneratePDF}
-          onDelete={handleDelete}
-          onOpenAlternatives={handleOpenAlternatives}
-          onGenerateAlternatives={handleGenerateAlternatives}
-        />
+        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/40">
+                <tr>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Cliente</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Empresa</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Data</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Valor</th>
+                  <th className="text-right p-4 font-medium text-muted-foreground">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <BudgetTable
+                  budgets={budgets}
+                  companies={companies}
+                  isLoading={isLoading}
+                  formatCurrency={formatCurrency}
+                  onGeneratePDF={handleGeneratePDF}
+                  onDelete={handleDelete}
+                  onOpenAlternatives={handleOpenAlternatives}
+                  onGenerateAlternatives={handleGenerateAlternatives}
+                />
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         <AlternativePriceRangeDialog
           open={showPriceRangeDialog}
