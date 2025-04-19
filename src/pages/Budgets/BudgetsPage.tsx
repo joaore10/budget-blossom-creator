@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import Layout from "@/components/Layout";
 import BudgetTable from "./components/BudgetTable";

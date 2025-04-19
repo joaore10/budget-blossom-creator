@@ -1,5 +1,6 @@
+
 import { Link } from "react-router-dom";
-import { Budget } from "@/types";
+import { Budget, Company } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   TableCell,
@@ -10,25 +11,57 @@ import BudgetStatus from "./BudgetStatus";
 
 interface BudgetTableProps {
   budgets: Budget[];
-  getCompanyById: (id: string) => { nome: string } | undefined;
-  onDeleteClick: (id: string) => void;
-  onGeneratePDFs: (budget: Budget) => void;
-  formatDate: (date: string) => string;
+  companies?: Company[];  // Made optional since it's not directly used in the component
+  isLoading?: boolean;
   formatCurrency: (value: number) => string;
-  calculateTotal: (budget: Budget) => number;
-  onViewAlternativeBudgets?: (budgetId: string) => void;
+  onGeneratePDF: (budget: Budget, company: Company, alternativeBudget: undefined, shouldDownload: boolean) => Promise<boolean>;
+  onDelete: (id: string) => void;
+  onOpenAlternatives?: (budgetId: string) => void;
+  onGenerateAlternatives?: (budgetId: string) => void;
 }
 
 const BudgetTable = ({
   budgets,
-  getCompanyById,
-  onDeleteClick,
-  onGeneratePDFs,
-  formatDate,
+  companies,
+  isLoading,
   formatCurrency,
-  calculateTotal,
-  onViewAlternativeBudgets,
+  onGeneratePDF,
+  onDelete,
+  onOpenAlternatives,
+  onGenerateAlternatives,
 }: BudgetTableProps) => {
+  // Helper function to get company by ID
+  const getCompanyById = (id: string): { nome: string } | undefined => {
+    return companies?.find(company => company.id === id);
+  };
+
+  // Helper function to calculate total
+  const calculateTotal = (budget: Budget): number => {
+    return budget.itens.reduce(
+      (total, item) => total + (item.quantidade * item.valor_unitario),
+      0
+    );
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('pt-BR').format(date);
+  };
+
+  if (isLoading) {
+    return (
+      <TableRow>
+        <TableCell colSpan={6} className="text-center h-24">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div>
+            <span className="ml-2">Carregando...</span>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
   if (budgets.length === 0) {
     return (
       <TableRow>
@@ -70,17 +103,33 @@ const BudgetTable = ({
                 variant="outline"
                 size="sm"
                 className="h-8 w-8 p-0"
-                onClick={() => onGeneratePDFs(budget)}
+                onClick={() => {
+                  const company = getCompanyById(budget.empresa_base_id);
+                  if (company) {
+                    onGeneratePDF(budget, company as Company, undefined, true);
+                  }
+                }}
               >
                 <FileText className="h-4 w-4" />
               </Button>
               
-              {onViewAlternativeBudgets && (
+              {onOpenAlternatives && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-8 w-8 p-0"
-                  onClick={() => onViewAlternativeBudgets(budget.id)}
+                  onClick={() => onOpenAlternatives(budget.id)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              )}
+
+              {onGenerateAlternatives && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => onGenerateAlternatives(budget.id)}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -101,7 +150,7 @@ const BudgetTable = ({
                 variant="outline"
                 size="sm"
                 className="h-8 w-8 p-0"
-                onClick={() => onDeleteClick(budget.id)}
+                onClick={() => onDelete(budget.id)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
