@@ -19,10 +19,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   const isActive = (path: string) => {
+    // Exact match for home
     if (path === "/") {
       return location.pathname === path;
     }
-    return location.pathname.startsWith(path);
+    
+    // For other routes, check if the current path starts with the menu item's path
+    // But ensure it doesn't partially match unintended routes
+    if (path === "/empresas") {
+      return location.pathname === path || location.pathname.startsWith("/empresas/");
+    }
+    
+    if (path === "/orcamentos") {
+      return location.pathname === path || location.pathname === "/orcamentos/novo";
+    }
+    
+    if (path === "/orcamentos/novo") {
+      return location.pathname === path;
+    }
+    
+    return false;
   };
 
   return (
