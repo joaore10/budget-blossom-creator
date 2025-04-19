@@ -30,7 +30,13 @@ export const generatePreviewHTML = (
       company.endereco,
       budget.cliente,
       items,
-      budget.data_criacao
+      budget.data_criacao,
+      {
+        razao_social: company.razao_social,
+        telefone: company.telefone,
+        email: company.email,
+        logo: company.logo
+      }
     );
   } catch (error) {
     console.error("Error generating preview HTML:", error);

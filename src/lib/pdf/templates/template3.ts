@@ -60,6 +60,11 @@ export const template3 = `
       background: white;
       border-radius: 10px;
     }
+    .company-logo {
+      max-height: 100px;
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body class="pdf-content">
@@ -73,12 +78,28 @@ export const template3 = `
     </div>
 
     <div class="content">
+      <div style="text-align: center; margin-bottom: 20px">
+        {{#if LOGO_EMPRESA}}
+        <img src="{{LOGO_EMPRESA}}" class="company-logo" alt="Logo da empresa" />
+        {{/if}}
+      </div>
+      
       <div class="client-details">
         <h3>Dados do Cliente</h3>
         <p><strong>Nome:</strong> {{NOME_CLIENTE}}</p>
         <p><strong>Empresa:</strong> {{NOME_EMPRESA}}</p>
+        {{#if RAZAO_SOCIAL}}
+        <p><strong>Razão Social:</strong> {{RAZAO_SOCIAL}}</p>
+        {{/if}}
+        {{#if EMAIL_EMPRESA}}
+        <p><strong>Email:</strong> {{EMAIL_EMPRESA}}</p>
+        {{/if}}
+        {{#if TELEFONE_EMPRESA}}
+        <p><strong>Telefone:</strong> {{TELEFONE_EMPRESA}}</p>
+        {{/if}}
       </div>
 
+      <!-- Tabela de itens tradicional -->
       <table>
         <thead>
           <tr>
@@ -93,6 +114,30 @@ export const template3 = `
           {{ITENS}}
         </tbody>
       </table>
+      
+      <!-- Exemplo de tabela com layout customizado -->
+      <h3>Detalhamento alternativo (exemplo)</h3>
+      <div id="custom-items"></div>
+      
+      <script>
+        // Usando a variável ITENS_CUSTOM para personalizar o layout dos itens
+        try {
+          const items = {{ITENS_CUSTOM}};
+          let html = '<table><tr><th>Descrição</th><th>Unidade</th><th>Qtd</th><th>Preço</th></tr>';
+          items.forEach(item => {
+            html += \`<tr>
+              <td>\${item.descricao}</td>
+              <td>\${item.unidade || 'UNIDADE'}</td>
+              <td>\${item.quantidade}</td>
+              <td>R$ \${item.valor_unitario.toFixed(2).replace('.', ',')}</td>
+            </tr>\`;
+          });
+          html += '</table>';
+          document.getElementById('custom-items').innerHTML = html;
+        } catch (e) {
+          document.getElementById('custom-items').innerHTML = '<p>Erro ao processar itens customizados</p>';
+        }
+      </script>
 
       <div class="total-value">
         <strong>Valor Total:</strong> R$ {{VALOR_TOTAL}}
