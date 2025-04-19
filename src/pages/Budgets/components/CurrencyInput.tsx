@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Input } from "@/components/ui/input";
 
@@ -20,16 +21,23 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
     // Get the raw input value
     let inputValue = e.target.value;
     
-    // Allow digits, comma and single period
-    const validInput = inputValue.replace(/[^\d,.]/g, '');
+    // Allow only digits and a single comma
+    const cleanedInput = inputValue.replace(/[^\d,]/g, '');
     
-    // Set the input value without converting to number yet
-    e.target.value = validInput;
+    // Ensure there's only one comma
+    const parts = cleanedInput.split(',');
+    let formattedValue = parts[0];
     
-    // Only convert to number when needed for parent component
-    // Replace comma with period for proper JS number parsing
-    if (validInput) {
-      const numericValue = validInput.replace(',', '.');
+    if (parts.length > 1) {
+      formattedValue += ',' + parts[1];
+    }
+    
+    // Update the input field with the formatted value
+    e.target.value = formattedValue;
+    
+    // Convert to number for the parent component (only if valid)
+    if (formattedValue) {
+      const numericValue = formattedValue.replace(',', '.');
       const parsedValue = parseFloat(numericValue);
       
       if (!isNaN(parsedValue)) {
