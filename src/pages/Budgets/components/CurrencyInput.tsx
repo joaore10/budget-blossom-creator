@@ -21,6 +21,7 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
   
   const inputRef = useRef<HTMLInputElement>(null);
   const [cursorPosition, setCursorPosition] = useState<number | null>(null);
+  const [lastValue, setLastValue] = useState<string>(displayValue);
   
   // Update the display value whenever the actual value changes from props
   useEffect(() => {
@@ -32,6 +33,7 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
     // Only update if the value has changed from outside
     if (parseFloat(displayValue.replace(/\./g, '').replace(',', '.')) !== value) {
       setDisplayValue(formatted);
+      setLastValue(formatted);
     }
   }, [value]);
   
@@ -43,11 +45,16 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
   }, [displayValue, cursorPosition]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Store cursor position before we modify the string
-    const cursorPos = e.target.selectionStart;
-    
-    // Get the raw input value
+    // Get the raw input value and current cursor position
     let inputValue = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    
+    // Count dots and commas before cursor in old and new values
+    const dotsAndCommasBeforeCursorInLast = (lastValue.substring(0, cursorPos).match(/[,\.]/g) || []).length;
+    const dotsAndCommasBeforeCursorInNew = (inputValue.substring(0, cursorPos).match(/[,\.]/g) || []).length;
+    
+    // Find difference in dots/commas to adjust cursor
+    const separatorDiff = dotsAndCommasBeforeCursorInNew - dotsAndCommasBeforeCursorInLast;
     
     // If user is trying to input a decimal separator, ensure it's a comma
     if (inputValue.includes('.')) {
@@ -55,39 +62,47 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
     }
     
     // Remove anything that's not a digit or comma
-    inputValue = inputValue.replace(/[^\d,]/g, '');
+    const cleanedValue = inputValue.replace(/[^\d,]/g, '');
     
     // Ensure there's only one comma
-    const parts = inputValue.split(',');
-    if (parts.length > 2) {
-      inputValue = parts[0] + ',' + parts.slice(1).join('');
-    }
+    const parts = cleanedValue.split(',');
+    let formattedValue = parts[0] + (parts.length > 1 ? ',' + parts.slice(1).join('') : '');
     
     // Limit decimal places to 2
-    if (parts.length === 2 && parts[1].length > 2) {
-      inputValue = parts[0] + ',' + parts[1].substring(0, 2);
+    if (parts.length > 1 && parts[1].length > 2) {
+      formattedValue = parts[0] + ',' + parts[1].substring(0, 2);
     }
     
-    // Calculate new cursor position based on changes
+    // Add thousand separators
+    const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    formattedValue = integerPart + (parts.length > 1 ? ',' + parts[1].substring(0, 2) : '');
+    
+    // Calculate new cursor position
     let newCursorPos = cursorPos;
-    if (e.target.value.length > inputValue.length && cursorPos) {
-      // If characters were removed, adjust cursor position
-      newCursorPos = Math.max(0, cursorPos - (e.target.value.length - inputValue.length));
-    }
     
-    // Update the display with the cleaned input
-    setDisplayValue(inputValue);
+    // Adjust for thousand separators added/removed
+    const oldThousandSeparators = (lastValue.substring(0, cursorPos).match(/\./g) || []).length;
+    const newThousandSeparators = (formattedValue.substring(0, cursorPos).match(/\./g) || []).length;
+    const thousandSeparatorDiff = newThousandSeparators - oldThousandSeparators;
+    
+    newCursorPos += thousandSeparatorDiff - separatorDiff;
+    
+    // Ensure cursor stays within valid range
+    newCursorPos = Math.max(0, Math.min(newCursorPos, formattedValue.length));
+    
+    // Update state
+    setDisplayValue(formattedValue);
+    setLastValue(formattedValue);
     setCursorPosition(newCursorPos);
     
     // Parse the value to a number for storage
-    // Replace comma with dot for proper JS number parsing
-    const numericValue = inputValue.replace(/\./g, '').replace(',', '.');
+    const numericValue = formattedValue.replace(/\./g, '').replace(',', '.');
     const parsedValue = parseFloat(numericValue);
     
     // If it's a valid number, call the onChange handler
     if (!isNaN(parsedValue)) {
       onChange(parsedValue);
-    } else if (inputValue === '' || inputValue === '0' || inputValue === '0,0' || inputValue === '0,00') {
+    } else if (formattedValue === '' || formattedValue === '0' || formattedValue === '0,0' || formattedValue === '0,00') {
       onChange(0);
     }
   };
@@ -109,13 +124,16 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
           maximumFractionDigits: 2 
         });
         setDisplayValue(formatted);
+        setLastValue(formatted);
         onChange(parsedValue);
       } else {
         setDisplayValue('0,00');
+        setLastValue('0,00');
         onChange(0);
       }
     } catch (e) {
       setDisplayValue('0,00');
+      setLastValue('0,00');
       onChange(0);
     }
     
