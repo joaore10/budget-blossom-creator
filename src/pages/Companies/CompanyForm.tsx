@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { useData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -21,10 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save } from "lucide-react";
 import { pdfTemplates, defaultPdfTemplate } from "@/lib/pdf-templates";
 import PdfPreview from "@/components/PdfPreview";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from 'uuid';
 
 const CompanyForm = () => {
   const { id } = useParams();
@@ -44,6 +46,8 @@ const CompanyForm = () => {
   });
 
   const [selectedTemplate, setSelectedTemplate] = useState("template1");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const isEditing = !!id;
 
@@ -91,7 +95,50 @@ const CompanyForm = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadLogoToStorage = async () => {
+    if (!logoFile) return null;
+
+    try {
+      const fileExtension = logoFile.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExtension}`;
+      
+      const { data, error } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, logoFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) {
+        toast.error("Erro ao fazer upload da logo");
+        return null;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error("Erro no upload da logo:", error);
+      toast.error("Erro no upload da logo");
+      return null;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.nome || !formData.cnpj || !formData.representante) {
@@ -100,13 +147,20 @@ const CompanyForm = () => {
     }
 
     try {
+      const logoUrl = logoFile ? await uploadLogoToStorage() : formData.logo;
+
+      const companyData = {
+        ...formData,
+        logo: logoUrl || '',
+      };
+
       if (isEditing && id) {
         updateCompany({
           id,
-          ...formData,
+          ...companyData,
         });
       } else {
-        addCompany(formData);
+        addCompany(companyData);
       }
       navigate("/empresas");
     } catch (error) {
@@ -203,14 +257,28 @@ const CompanyForm = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="logo">URL da Logo</Label>
-                  <Input
-                    id="logo"
-                    name="logo"
-                    value={formData.logo}
-                    onChange={handleChange}
-                    placeholder="Ex: https://sua-logo.com/logo.png"
-                  />
+                  <Label htmlFor="logo">Logo da Empresa</Label>
+                  <div className="flex items-center space-x-4">
+                    <Input
+                      id="logo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="flex-grow"
+                    />
+                    {logoPreview && (
+                      <img 
+                        src={logoPreview} 
+                        alt="Logo Preview" 
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                    )}
+                  </div>
+                  {formData.logo && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      URL atual: {formData.logo}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
