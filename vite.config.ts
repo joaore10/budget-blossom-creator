@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "./", // Mantém o caminho base relativo
+  base: "", // Mantém o caminho base relativo
   build: {
     // Garantir que o build esteja limpo a cada vez
     emptyOutDir: true,

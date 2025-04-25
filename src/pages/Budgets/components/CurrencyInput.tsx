@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 
 interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -8,81 +8,52 @@ interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
   className?: string;
 }
 
-const CurrencyInput: React.FC<CurrencyInputProps> = ({ 
-  value, 
-  onChange, 
-  className,
-  ...props 
-}) => {
-  // Format the initial value to display properly with comma
-  const displayValue = value === 0 ? '' : value.toString().replace('.', ',');
+const CurrencyInput: React.FC<CurrencyInputProps> = (props) => {
+  const { value, onChange, className, ...rest } = props;
+  const [inputValue, setInputValue] = useState(value === 0 ? '' : value.toFixed(2).replace('.', ','));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    
-    // Allow any input with digits and only one comma
-    const regex = /^[0-9]*,?[0-9]*$/;
-    
-    if (regex.test(inputValue) || inputValue === '') {
-      // Just store the input value as is
-      e.target.value = inputValue;
-      
-      if (inputValue === '') {
-        onChange(0);
-        return;
-      }
-      
-      if (inputValue === ',') {
-        // Allow comma input without conversion
-        return;
-      }
-      
-      // Only convert to number when submitting the value
-      if (inputValue.includes(',')) {
-        const numericValue = parseFloat(inputValue.replace(',', '.'));
-        if (!isNaN(numericValue)) {
-          onChange(numericValue);
-        }
-      } else {
-        // If no comma, it's a whole number
-        const numericValue = parseFloat(inputValue);
-        if (!isNaN(numericValue)) {
-          onChange(numericValue);
-        }
-      }
-    }
-  };
+    const newValue = e.target.value.replace(/[^\d,]/g, '');
+    setInputValue(newValue);
 
-  // On blur, ensure the value is properly formatted
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    
-    if (!inputValue || inputValue === '' || inputValue === ',') {
-      e.target.value = '';
+    if (!newValue || newValue === ',' || newValue === '.') {
       onChange(0);
       return;
     }
-    
-    // Preserve the exact format but store as number
-    if (inputValue.includes(',')) {
-      const numericValue = parseFloat(inputValue.replace(',', '.'));
-      if (!isNaN(numericValue)) {
-        onChange(numericValue);
-      }
+
+    const normalizedValue = newValue.replace(',', '.');
+    const numericValue = parseFloat(normalizedValue);
+
+    if (!isNaN(numericValue)) {
+      onChange(numericValue);
+    }
+  };
+
+  const handleBlur = () => {
+    if (!inputValue || inputValue === ',' || inputValue === '.') {
+      setInputValue('');
+      onChange(0);
+      return;
+    }
+
+    const normalizedValue = inputValue.replace(',', '.');
+    const numericValue = parseFloat(normalizedValue);
+
+    if (!isNaN(numericValue)) {
+      const formattedValue = numericValue.toFixed(2).replace('.', ',');
+      setInputValue(formattedValue);
+      onChange(numericValue);
     } else {
-      const numericValue = parseFloat(inputValue);
-      if (!isNaN(numericValue)) {
-        onChange(numericValue);
-      }
+      setInputValue(value.toFixed(2).replace('.', ','));
     }
   };
 
   return (
     <Input
-      {...props}
+      {...rest}
       type="text"
       inputMode="decimal"
-      value={displayValue}
+      value={inputValue}
       onChange={handleChange}
       onBlur={handleBlur}
       className={className}

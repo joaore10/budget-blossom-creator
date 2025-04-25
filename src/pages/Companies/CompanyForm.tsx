@@ -95,12 +95,11 @@ const CompanyForm = () => {
   const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const localPath = file.name;
-      setFormData(prev => ({ ...prev, logo: localPath }));
-      
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
+        const base64String = reader.result as string;
+        setLogoPreview(base64String);
+        setFormData(prev => ({ ...prev, logo: base64String }));
       };
       reader.readAsDataURL(file);
     }
@@ -235,11 +234,7 @@ const CompanyForm = () => {
                       />
                     )}
                   </div>
-                  {formData.logo && !logoPreview && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Caminho do arquivo: {formData.logo}
-                    </p>
-                  )}
+                  
                 </div>
 
                 <div className="space-y-2">
@@ -311,9 +306,41 @@ const CompanyForm = () => {
 
                 <div className="space-y-2">
                   <Label>Preview do PDF</Label>
-                  <PdfPreview 
-                    html={formData.modelo_pdf} 
+                  <PdfPreview
+                    html={formData.modelo_pdf}
                     className="min-h-[300px] border"
+                    data={{
+                      NOME_EMPRESA: formData.nome,
+                      CNPJ_EMPRESA: formData.cnpj,
+                      REPRESENTANTE: formData.representante,
+                      ENDERECO_EMPRESA: formData.endereco,
+                      EMAIL_EMPRESA: formData.email,
+                      TELEFONE_EMPRESA: formData.telefone,
+                      LOGO_EMPRESA: logoPreview || formData.logo,
+                      NOME_CLIENTE: 'Cliente Exemplo',
+                      CIDADE: 'São Paulo',
+                      DATA: new Date().toLocaleDateString('pt-BR'),
+                      NUMERO: '00001',
+                      VALOR_TOTAL: '1.000,00',
+                      ITENS: `
+                      <tr>
+                        <td>1</td>
+                        <td>UNIDADE</td>
+                        <td>Item de exemplo</td>
+                        <td>Observação exemplo</td>
+                        <td>R$ 500,00</td>
+                        <td>R$ 500,00</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>CAIXA</td>
+                        <td>Outro item de exemplo</td>
+                        <td>Observação exemplo 2</td>
+                        <td>R$ 250,00</td>
+                        <td>R$ 500,00</td>
+                      </tr>
+                      `
+                    }}
                   />
                 </div>
               </div>

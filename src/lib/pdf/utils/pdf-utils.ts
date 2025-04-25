@@ -7,7 +7,7 @@ export const pdfUtils = {
     companyRepresentative: string,
     companyAddress: string,
     clientName: string,
-    items: Array<{ descricao: string; quantidade: number; valor_unitario: number; unidade: string }>,
+    items: Array<{ descricao: string; quantidade: number; observacao?: string ; valor_unitario: number; unidade: string }>,
     date: string,
     companyData?: {
       razao_social?: string;
@@ -31,6 +31,7 @@ export const pdfUtils = {
         <td>${item.quantidade}</td>
         <td>${item.unidade || 'UNIDADE'}</td>
         <td>${item.descricao}</td>
+        <td>${item.observacao || 'N/A'}</td>
         <td>R$ ${item.valor_unitario.toFixed(2).replace('.', ',')}</td>
         <td>R$ ${itemTotal.toFixed(2).replace('.', ',')}</td>
       </tr>

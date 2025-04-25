@@ -3,95 +3,321 @@ import { commonStyles } from '../../pdf-styles';
 
 export const template1 = `
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
+
 <head>
-  <meta charset="utf-8">
-  <title>Orçamento</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orçamento {{NUMERO}}</title>
   <style>
-    ${commonStyles}
+    /* Header */
     .header {
-      background: url('https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=800&q=80') center;
-      background-size: cover;
-      color: white;
-      padding: 40px;
-      border-radius: 10px;
-      margin-bottom: 30px;
-      position: relative;
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 10px;
+      border:  1px solid #000;
+      font-size: 14px;
     }
-    .header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
-      border-radius: 10px;
+
+    .header-left {
+      display: flex;
+      align-items: center;
     }
-    .header h2, .header p {
-      position: relative;
-      z-index: 1;
-    }
-    .client-info {
-      background: #F8F9FA;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 30px;
-      border-left: 4px solid #8B5CF6;
-    }
-    .total {
-      font-size: 24px;
-      color: #8B5CF6;
+
+    /* .header-logo {
+      width: 100px;
+      height: auto;
+      margin-right: 10px;
+    } */
+
+    .header-right {
       text-align: right;
-      margin: 20px 0;
-      padding: 20px;
-      background: #F8F9FA;
-      border-radius: 8px;
+      font-size: 14px;
     }
-    .signature {
-      margin-top: 50px;
-      padding-top: 30px;
-      border-top: 2px solid #E5DEFF;
+
+    .header-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 10px 0;
+      border-bottom: 1px solid #000;
+      padding-bottom: 5px;
+      text-align: left;
+    }
+
+    .header-date {
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    /* Introduction */
+    .introduction {
+      font-size: 12px;
+      margin: 10px 0 20px;
+    }
+
+    /* Client Info */
+    .client-info {
+      margin-bottom: 20px;
+      font-size: 12px;
+      
+    }
+
+    .client-info h3 {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;      
+    }
+
+    .client-info .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      border-top: 1px solid #000;
+    }
+
+    .client-info p {
+      margin: 2px 0;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 11px;
+    }
+
+    th,
+    td {
+      padding: 8px;
       text-align: center;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background: #e0e0e0;
+      font-weight: bold;
+    }
+
+    td {
+      background: #fff;
+    }
+
+    .table-image {
+      width: 50px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Column widths */
+    th:nth-child(1),
+    td:nth-child(1) {
+      width: 5%;
+      text-align: center;
+    }
+
+    /* Item */
+    th:nth-child(2),
+    td:nth-child(2) {
+      width: 5%;
+      text-align: center;
+    }
+
+    /* Nome */
+    th:nth-child(3),
+    td:nth-child(3) {
+      width: 30%;
+      text-align: center;
+    }
+
+    /* Imagem */
+    th:nth-child(4),
+    td:nth-child(4) {
+      width: 10%;
+      text-align: center;
+    }
+
+    /* Und. */
+    th:nth-child(5),
+    td:nth-child(5) {
+      width: 10%;
+      text-align: center;
+    }
+
+    /* Qtd. */
+    th:nth-child(6),
+    td:nth-child(6) {
+      width: 10%;
+      text-align: center;
+    }
+
+    /* Vr. Unit. */
+    th:nth-child(7),
+    td:nth-child(7) {
+      width: 10%;
+      text-align: center;
+    }
+
+    /* Subtotal */
+
+    /* Total */
+    .total {
+      text-align: right;
+      font-size: 12px;
+      margin: 10px 0;
+    }
+
+    .total p {
+      margin: 5px 0;
+    }
+
+    .total strong {
+      font-weight: bold;
+    }
+
+    /* Observations */
+    .observations {
+      font-size: 10px;
+      margin: 10px 0;
+    }
+
+    /* Signature */
+    .signature {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .signature-line {
+      width: 200px;
+      border-top: 1px solid #000;
+      margin: 10px auto;
+    }
+
+    /* Print styles */
+    @media print {
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+
+      body {
+        padding: 0;
+        margin: 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .pdf-container {
+        box-shadow: none;
+        width: 100%;
+        padding: 0;
+      }
+
+      table,
+      .header,
+      .client-info,
+      .total,
+      .signature {
+        page-break-inside: avoid;
+      }
+    }
+
+    /* Responsive adjustments */
+    @media screen and (max-width: 768px) {
+      .pdf-container {
+        width: 100%;
+        padding: 10px;
+      }
+
+      .header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .header-right {
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .client-info .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 10px;
+      }
     }
   </style>
 </head>
-<body class="pdf-content">
-  <div class="header">
-    <h2>ORÇAMENTO Nº {{NUMERO}}</h2>
-    <p>{{DATA}}</p>
-  </div>
-  
-  <div class="client-info">
-    <p><strong>A/C:</strong> {{NOME_CLIENTE}}</p>
-    <p>Prezado cliente, enviamos nossa proposta comercial referente ao orçamento solicitado.</p>
-  </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Quantidade</th>
-        <th>Valor Unitário</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{ITENS}}
-    </tbody>
-  </table>
+<body>
+  <div class="pdf-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <!-- <img src="" alt="DFabri Logo" class="header-logo"> -->
+        <div class="company-info">
+          <p><strong>{{NOME_EMPRESA}}</strong></p>
+          <p>CNPJ: {{CNPJ_EMPRESA}}</p>
+          <p>{{ENDERECO_EMPRESA}}</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <p>Vendedor: {{REPRESENTANTE}}</p>
+      </div>
+    </div>
+    <div class="header-title">
+      ORÇAMENTO N° {{NUMERO}}
+      <div class="header-date">{{DATA}}</div>
+    </div>
 
-  <div class="total">
-    <strong>Valor Total:</strong> R$ {{VALOR_TOTAL}}
-  </div>
+    <!-- Introduction -->
+    <div class="introduction">
+      <p>Prezado cliente, segue nossa proposta comercial. Qualquer dúvida estamos à disposição.</p>
+    </div>
 
-  <div class="signature">
-    <p>{{CIDADE}}, {{DATA}}</p>
-    <p>_______________________________________________</p>
-    <p><strong>{{REPRESENTANTE}}</strong></p>
-    <p>{{NOME_EMPRESA}}</p>
-    <p>CNPJ: {{CNPJ_EMPRESA}}</p>
+    <!-- Client Info -->
+    <div class="client-info">
+      <h3>DADOS DO CLIENTE</h3>
+      <div class="info-grid">
+        <div>
+          <p><strong>Cliente:</strong> {{NOME_CLIENTE}}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <table id="tabela-itens">
+      <thead>
+        <tr>
+          <th>Quantidade</th>
+          <th>Unidade</th>
+          <th>Item</th>
+          <th>Observação</th>
+          <th>Valor Unitário</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ITENS}}
+      </tbody>
+    </table>
+
+
+    <!-- Total -->
+    <div class="total">
+      <p><strong>TOTAL: R$ {{VALOR_TOTAL}}</strong></p>
+    </div>
+
+    <!-- Signature -->
+    <div class="signature">
+      <p>Assinatura do cliente</p>
+      <div class="signature-line"></div>
+    </div>
   </div>
 </body>
+
 </html>
 `;

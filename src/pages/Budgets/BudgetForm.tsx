@@ -1,33 +1,32 @@
-
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import Layout from "@/components/Layout";
-import { useData } from "@/contexts/DataContext";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import Layout from '@/components/Layout';
+import { useData } from '@/contexts/DataContext';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
-import { BudgetItem } from "@/types";
-import { v4 as uuidv4 } from "uuid";
-import { toast } from "sonner";
-import { Checkbox } from "@/components/ui/checkbox";
-import { generatePDF } from "@/lib/pdf/document-generator";
-import CurrencyInput from "./components/CurrencyInput";
-
+} from '@/components/ui/select';
+import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
+import { BudgetItem } from '@/types';
+import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
+import { generatePDF } from '@/lib/pdf/document-generator';
+import CurrencyInput from './components/CurrencyInput';
 const unidadeOptions = [
   "UNIDADE",
   "PACOTE",
@@ -135,7 +134,7 @@ const BudgetForm = () => {
       id: uuidv4(),
       descricao: "",
       quantidade: 1,
-      valor_unitario: 0,
+      valor_unitario: 0.00,
       observacao: "",
       unidade: "UNIDADE",
     };
@@ -151,6 +150,7 @@ const BudgetForm = () => {
     field: keyof BudgetItem,
     value: string | number
   ) => {
+    //console.log('updateItem called with:', { itemId, field, value });
     setFormData((prev) => ({
       ...prev,
       itens: prev.itens.map((item) => {
@@ -159,8 +159,8 @@ const BudgetForm = () => {
             return { ...item, [field]: parseInt(value as string) || 0 };
           } else if (field === "valor_unitario") {
             // Ensure valor_unitario is always a number
-            const numericValue = typeof value === 'string' 
-              ? parseFloat(value) || 0 
+            const numericValue = typeof value === 'string'
+              ? parseFloat(value.replace(',', '.')) || 0.00
               : value;
             return { ...item, [field]: numericValue };
           }
